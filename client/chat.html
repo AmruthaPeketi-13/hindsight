@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hindsight AI Ops Manager | Chat</title>
+<script src="js/auth-check.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
+
+        body {
+            background-color: #020617;
+            color: #e5e2e1;
+            overflow: hidden;
+            font-family: 'Geist', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card-active {
+            border-color: #c0c1ff;
+            box-shadow: 0 0 15px rgba(192, 193, 255, 0.1);
+        }
+        .glow-indigo {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .ai-gradient-text {
+            background: linear-gradient(90deg, #c0c1ff, #4cd7f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container-lowest": "#0e0e0e", "outline-variant": "#464554", "primary-fixed-dim": "#c1c1ff", "surface-variant": "#353534", "on-primary": "#221f85", "on-secondary-container": "#00424e", "on-error": "#690005", tertiary: "#ffb2b7", "surface-container-low": "#1c1b1b", "on-error-container": "#ffdad6", "on-background": "#e5e2e1", "on-surface-variant": "#c7c4d7", secondary: "#4cd7f6", "tertiary-container": "#ff516a", "surface-bright": "#3a3939", "surface-container-high": "#2a2a2a", background: "#131313", "on-tertiary": "#67001b", "inverse-primary": "#5252b5", "on-primary-container": "#1a157f", "on-surface": "#e5e2e1", "tertiary-fixed-dim": "#ffb2b7", "on-primary-fixed": "#0a006b", surface: "#131313", error: "#ffb4ab", "secondary-fixed-dim": "#4cd7f6", "on-secondary-fixed": "#001f26", primary: "#c1c1ff", "tertiary-fixed": "#ffdadb", "secondary-container": "#03b5d3", "on-tertiary-container": "#5b0017", "inverse-on-surface": "#313030", "on-tertiary-fixed": "#40000d", "primary-container": "#8586ec", "inverse-surface": "#e5e2e1", "on-secondary": "#003640", "surface-container-highest": "#353534", "on-secondary-fixed-variant": "#004e5c", "surface-container": "#201f1f", "surface-tint": "#c1c1ff", outline: "#908fa0", "secondary-fixed": "#acedff", "primary-fixed": "#e2dfff", "on-primary-fixed-variant": "#3a399c", "error-container": "#93000a", "on-tertiary-fixed-variant": "#92002a", "surface-dim": "#131313"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {lg: "24px", "container-max": "1440px", sm: "8px", md: "16px", xs: "4px", xl: "40px", base: "4px", gutter: "20px"}, fontFamily: {"body-md": ["Geist"], "headline-xl": ["Geist"], "headline-lg-mobile": ["Geist"], "headline-lg": ["Geist"], "label-mono": ["JetBrains Mono"], "body-sm": ["Geist"], headline: ["Geist"], display: ["Geist"], body: ["Geist"], label: ["Jetbrains Mono"]}, fontSize: {"body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-xl": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-mono": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+</head>
+<body class="flex h-screen bg-surface-container-lowest overflow-hidden">
+<!-- WebGL Background -->
+<div class="fixed inset-0 z-0 pointer-events-none opacity-40">
+</div>
+<!-- SideNavBar (Predicted) -->
+<aside id="mobile-menu" class="fixed left-0 -translate-x-full md:translate-x-0 transition-transform duration-300 top-0 h-full w-64 flex flex-col p-md z-40 bg-surface-container-low/60 dark:bg-surface-container-low/60 backdrop-blur-2xl border-r border-white/5 shadow-2xl">
+<div class="flex items-center gap-md mb-xl px-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-on-primary-container">memory</span>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-none">Hindsight</h1>
+<p class="font-label-mono text-label-mono text-outline opacity-70">AI Ops Manager</p>
+</div>
+</div>
+<nav class="flex-1 space-y-sm">
+<!-- Active Tab: Chat -->
+<a class="flex items-center gap-md px-md py-sm text-primary-fixed-dim bg-primary/10 rounded-lg font-label-mono text-label-mono transition-transform translate-x-1" href="/chat.html">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                Chat
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/vault.html">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+                Memory
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/analytics.html">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/settings.html">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-error rounded-lg font-label-mono text-label-mono transition-all mt-4" href="#" onclick="logout()">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</nav>
+<div class="mt-auto space-y-sm">
+<div class="p-sm bg-surface-container-high/40 rounded-lg border border-white/5 mb-md">
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest mb-xs">Active Instance</p>
+<div class="flex items-center justify-between">
+<span class="font-label-mono text-label-mono text-secondary">GPT-4o</span>
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+</div>
+</div>
+<button onclick="window.location.reload()" class="w-full mt-sm py-sm bg-primary text-on-primary font-label-mono text-label-mono rounded-lg active:scale-95 transition-transform">
+                New Session
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col w-full min-h-screen md:ml-64 xl:mr-[320px] relative z-10 transition-all pt-20 md:pt-0">
+<div class="flex-1 flex flex-col h-screen relative w-full">
+    <div class="md:hidden flex items-center justify-between p-md bg-surface-container-lowest/90 backdrop-blur-md border-b border-white/5 sticky top-0 z-50 w-full">
+        <div class="flex items-center gap-sm">
+            <span class="material-symbols-outlined text-primary">memory</span>
+            <span class="font-headline-lg-mobile text-primary font-bold">Hindsight</span>
+        </div>
+        <button onclick="document.getElementById('mobile-menu').classList.toggle('-translate-x-full')" class="text-on-surface p-sm bg-white/5 rounded-lg active:scale-95">
+            <span class="material-symbols-outlined">menu</span>
+        </button>
+    </div>
+    
+<!-- Chat Scroll Area -->
+<div class="flex-1 overflow-y-auto custom-scrollbar pt-xl pb-32 px-xl">
+<!-- Welcome State -->
+<div class="flex flex-col items-center justify-center min-h-[614px] text-center mb-xl" id="welcome-state">
+<div class="w-24 h-24 mb-lg rounded-3xl bg-surface-container flex items-center justify-center border border-white/10 glow-indigo animate-float">
+<span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings: 'FILL' 1;">neurology</span>
+</div>
+<h2 class="font-headline-xl text-headline-xl mb-sm ai-gradient-text">Welcome back, Hindsight</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mb-xl">Your system architect assistant is ready. I've indexed 12 new incidents and 45 memory fragments since you left.</p>
+<div class="flex flex-wrap justify-center gap-md max-w-2xl">
+<button class="glass-card px-lg py-sm rounded-full flex items-center gap-sm hover:border-primary/40 hover:bg-white/5 transition-all text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="bolt">bolt</span>
+                            Check last IT incident
+                        </button>
+<button class="glass-card px-lg py-sm rounded-full flex items-center gap-sm hover:border-primary/40 hover:bg-white/5 transition-all text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-tertiary" data-icon="summarize">summarize</span>
+                            Summarize HR memory
+                        </button>
+<button class="glass-card px-lg py-sm rounded-full flex items-center gap-sm hover:border-primary/40 hover:bg-white/5 transition-all text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-primary" data-icon="search_insights">search_insights</span>
+                            Analyze Tier 2 latency
+                        </button>
+</div>
+</div>
+<!-- Chat History (Hidden initially or populated) -->
+<div class="space-y-xl max-w-4xl mx-auto hidden" id="chat-messages">
+<!-- User Message -->
+<div class="flex items-start gap-md flex-row-reverse">
+<div class="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center font-label-mono text-primary">JD</div>
+<div class="glass-card glass-card-active p-md rounded-2xl rounded-tr-none max-w-[80%]">
+<p class="font-body-md text-body-md text-on-surface">Can you pull up the details on the server outage from last night? I think it was related to the HR database migration.</p>
+</div>
+</div>
+<!-- AI Message -->
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-full bg-primary-container border border-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container text-xl" style="font-variation-settings: 'FILL' 1;">memory</span>
+</div>
+<div class="flex-1 space-y-md max-w-[85%]">
+<div class="glass-card p-lg rounded-2xl rounded-tl-none space-y-md">
+<!-- Meta Badges -->
+<div class="flex flex-wrap gap-xs mb-sm">
+<span class="px-sm py-1 rounded bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-label-mono uppercase tracking-tighter">GPT-4o</span>
+<span class="px-sm py-1 rounded bg-amber-400/10 border border-amber-400/20 text-amber-400 text-[10px] font-label-mono uppercase tracking-tighter">Tier 2</span>
+<span class="px-sm py-1 rounded bg-primary/10 border border-primary/20 text-primary text-[10px] font-label-mono uppercase tracking-tighter">Medium Complexity</span>
+<span class="px-sm py-1 rounded bg-white/5 border border-white/10 text-outline text-[10px] font-label-mono uppercase tracking-tighter">Memory Used</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                                    Analyzing system logs and cross-referencing with HR department change requests. I found a direct correlation between the **Migration Task #992** and the primary IT database lock at 02:14 AM. 
+                                </p>
+<!-- Memory Match Card -->
+<div class="bg-surface-container-lowest/50 border border-white/10 rounded-xl p-md">
+<div class="flex items-center justify-between mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="history_edu">history_edu</span>
+<span class="text-[11px] font-label-mono uppercase text-outline">Retrieved from Hindsight</span>
+</div>
+<div class="text-[11px] font-label-mono text-secondary px-sm py-0.5 rounded-full bg-secondary/10 border border-secondary/20">94% Match</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional corporate headshot of a female system administrator in a high-tech office environment with soft neon blue lighting. The style is clean, modern, and high-fidelity, matching a sophisticated AI dashboard aesthetic with cinematic depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApn23YTtuzwMxBbAc7gNXJwqyvEfyaimzMirgpDuB3VaX0_-STqYtjD6lQo1pWvFeCr_97LURNdTaMQ1d4hxYiSu9xQj9C2veeTdEYgFGJxemO5E8kCDe0D00A3hvNrbehDL5FhPJ_fYGKzNMiFV1CEdtIV9-y686IaGKyxhbAmuVb_kSvGJJLiiQyXNPh0EYYVwrwZ888vx2pio4-Dd0eDMxZJAQHOQgc5X1tel8b-XEL2ni7MVPE9SWr664iv9N3sChkGsEvxw"/>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-sm font-semibold truncate">Sarah Jenkins</h4>
+<p class="font-body-sm text-body-sm text-outline-variant truncate">Lead Database Architect - Incident #2293</p>
+</div>
+</div>
+<div class="mt-sm pt-sm border-t border-white/5 text-[13px] text-on-surface-variant italic">
+                                        "Confirmed latency issues in the staging environment before final push. Recommended sequential rollout."
+                                    </div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                                    The roll-back was initiated by the automated failover system, but the root cause appears to be an unoptimized JOIN operation in the new payroll schema.
+                                </p>
+</div>
+<div class="flex items-center gap-md px-sm">
+<button class="text-outline hover:text-primary transition-colors flex items-center gap-xs font-label-mono text-[10px]">
+<span class="material-symbols-outlined text-sm">thumb_up</span> Helpful
+                                </button>
+<button class="text-outline hover:text-error transition-colors flex items-center gap-xs font-label-mono text-[10px]">
+<span class="material-symbols-outlined text-sm">thumb_down</span> Not Helpful
+                                </button>
+<button class="text-outline hover:text-secondary transition-colors flex items-center gap-xs font-label-mono text-[10px] ml-auto">
+<span class="material-symbols-outlined text-sm">share</span> Export Log
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Bar -->
+<div class="absolute bottom-lg left-1/2 -translate-x-1/2 w-full max-w-4xl px-lg">
+<div class="glass-card rounded-2xl p-sm flex items-center gap-sm shadow-2xl border-white/10 group focus-within:border-primary/50 transition-all">
+<button class="w-10 h-10 rounded-xl flex items-center justify-center text-outline hover:text-on-surface hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface placeholder:text-outline/50" id="chat-input" placeholder="Ask anything about system operations..." type="text"/>
+<div class="flex items-center gap-sm">
+<span class="hidden md:block font-label-mono text-[10px] text-outline/40 mr-sm">Enter to send</span>
+<button class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-primary/20" onclick="sendMessage()">
+<span class="material-symbols-outlined">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Stats & Memory Sidebar -->
+<aside class="hidden xl:block fixed right-0 top-0 h-full w-[320px] bg-surface-container-lowest/40 backdrop-blur-xl border-l border-white/5 p-lg z-40 flex flex-col overflow-y-auto custom-scrollbar">
+<h3 class="font-label-mono text-label-mono text-outline uppercase tracking-widest mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-sm">analytics</span>
+            Live Intelligence
+        </h3>
+<!-- Session Memory Usage -->
+<div class="space-y-lg">
+<div class="glass-card p-md rounded-xl">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-body-sm text-body-sm font-semibold">Memory Context</span>
+<span class="font-label-mono text-[11px] text-secondary">64.2 MB</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 65%;"></div>
+</div>
+<p class="mt-xs text-[10px] text-outline font-body-sm">Indexing 12,402 active parameters</p>
+</div>
+<!-- Active Monitoring -->
+<div class="space-y-md">
+<h4 class="text-[11px] font-label-mono text-outline-variant uppercase">Current Status</h4>
+<div class="flex items-center gap-md p-sm hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-white/5">
+<div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">dns</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="text-xs font-semibold">IT Cluster A</span>
+<span class="text-[10px] text-secondary font-label-mono">Stable</span>
+</div>
+<div class="text-[10px] text-outline">99.98% Uptime</div>
+</div>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-white/5 rounded-lg transition-colors border border-transparent hover:border-white/5">
+<div class="w-8 h-8 rounded bg-tertiary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-sm">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="text-xs font-semibold">HR DB Link</span>
+<span class="text-[10px] text-tertiary font-label-mono">Delayed</span>
+</div>
+<div class="text-[10px] text-outline">Latency +240ms</div>
+</div>
+</div>
+</div>
+<!-- Memory Fragments -->
+<div class="space-y-md">
+<h4 class="text-[11px] font-label-mono text-outline-variant uppercase">Recent Memory Fragments</h4>
+<div class="space-y-sm">
+<div class="p-sm bg-white/5 border border-white/10 rounded-lg hover:border-primary/30 transition-all cursor-pointer group">
+<div class="flex items-center gap-xs mb-xs">
+<span class="material-symbols-outlined text-[12px] text-primary">bookmark</span>
+<span class="text-[10px] font-label-mono text-outline">Incident Report #112</span>
+</div>
+<p class="text-[12px] text-on-surface line-clamp-2">"Schema update failed due to locked rows in legacy production table..."</p>
+</div>
+<div class="p-sm bg-white/5 border border-white/10 rounded-lg hover:border-primary/30 transition-all cursor-pointer group">
+<div class="flex items-center gap-xs mb-xs">
+<span class="material-symbols-outlined text-[12px] text-secondary">shield</span>
+<span class="text-[10px] font-label-mono text-outline">Auth Policy #88</span>
+</div>
+<p class="text-[12px] text-on-surface line-clamp-2">"New MFA requirements for Tier 2 administrative access levels..."</p>
+</div>
+</div>
+<button class="w-full py-2 border border-white/10 rounded-lg text-[11px] font-label-mono text-outline hover:bg-white/5 transition-all">
+                    View Full Archive
+                </button>
+</div>
+<!-- Visualization Placeholder -->
+<div class="h-40 glass-card rounded-xl overflow-hidden relative group">
+<div class="absolute inset-0 flex items-center justify-center text-outline/20 group-hover:text-primary/30 transition-colors">
+<span class="material-symbols-outlined text-6xl">insights</span>
+</div>
+<div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-primary/10 to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1">
+<div class="w-1 h-1 rounded-full bg-primary animate-ping"></div>
+<span class="text-[10px] font-label-mono text-primary uppercase">Flow Analysis</span>
+</div>
+</div>
+</div>
+</aside>
+
+<script>
+let isLoading = false;
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  if (!message || isLoading) return;
+
+  document.getElementById('welcome-state').classList.add('hidden');
+  document.getElementById('chat-messages').classList.remove('hidden');
+  isLoading = true;
+  input.value = '';
+  
+  const chatArea = document.getElementById('chat-messages');
+  chatArea.innerHTML += `
+    <div class="flex items-start gap-md flex-row-reverse mb-xl">
+      <div class="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center font-label-mono text-primary">ID_01</div>
+      <div class="glass-card glass-card-active p-md rounded-2xl rounded-tr-none max-w-[80%]">
+        <p class="font-body-md text-body-md text-on-surface">${message.replace(/</g, '&lt;')}</p>
+      </div>
+    </div>`;
+
+  const id = 'ai-' + Date.now();
+  chatArea.innerHTML += `
+    <div class="flex items-start gap-md mb-xl">
+      <div class="w-10 h-10 rounded-full bg-primary-container border border-primary/20 flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary-container text-xl" style="font-variation-settings: 'FILL' 1;">memory</span>
+      </div>
+      <div class="flex-1 space-y-md max-w-[85%]">
+        <div class="glass-card p-lg rounded-2xl rounded-tl-none space-y-md">
+          <div class="flex flex-wrap gap-xs mb-sm" id="${id}-badges">
+             <span class="px-sm py-1 rounded bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-label-mono uppercase tracking-tighter animate-pulse">ROUTING...</span>
+          </div>
+          <p class="font-body-md text-body-md text-on-surface leading-relaxed" id="${id}-text">_</p>
+          <div id="${id}-memory" class="hidden mt-md"></div>
+        </div>
+      </div>
+    </div>`;
+    
+  chatArea.parentElement.scrollTo({ top: chatArea.parentElement.scrollHeight, behavior: 'smooth' });
+
+  try {
+    const res = await fetch('/api/chat/stream', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let text = '';
+    
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      const chunks = decoder.decode(value).split('\n');
+      for (const line of chunks) {
+        if (line.startsWith('event: ')) this.evt = line.replace('event: ','').trim();
+        else if (line.startsWith('data: ')) {
+          const d = JSON.parse(line.replace('data: ',''));
+          if (this.evt === 'routing') {
+            document.getElementById(id+'-badges').innerHTML = `
+              <span class="px-sm py-1 rounded bg-secondary/10 border border-secondary/20 text-secondary text-[10px] font-label-mono uppercase tracking-tighter">${d.label}</span>
+              <span class="px-sm py-1 rounded bg-white/5 border border-white/10 text-outline text-[10px] font-label-mono uppercase tracking-tighter">${d.reason}</span>`;
+          } else if (this.evt === 'memory_matches' && d.used) {
+            const m = d.matches[0];
+            document.getElementById(id+'-memory').classList.remove('hidden');
+            document.getElementById(id+'-memory').innerHTML = `
+              <div class="bg-surface-container-lowest/50 border border-white/10 rounded-xl p-md">
+                <div class="flex items-center justify-between mb-sm">
+                  <span class="text-[11px] font-label-mono uppercase text-outline">Retrieved from Hindsight</span>
+                  <span class="text-[11px] font-label-mono text-secondary px-sm py-0.5 rounded-full bg-secondary/10 border border-secondary/20">${m.score}% Match</span>
+                </div>
+                <div class="text-[13px] font-bold">${m.user}</div>
+                <div class="mt-sm pt-sm border-t border-white/5 text-[13px] text-on-surface-variant italic">"${m.summary}"</div>
+              </div>`;
+          } else if (this.evt === 'token') {
+            text += d.token;
+            document.getElementById(id+'-text').innerHTML = text.replace(/\n/g, '<br>');
+            chatArea.parentElement.scrollTo({ top: chatArea.parentElement.scrollHeight, behavior: 'smooth' });
+          }
+        }
+      }
+    }
+  } catch (e) {
+    document.getElementById(id+'-text').innerText = 'Error: ' + e.message;
+  }
+  isLoading = false;
+}
+document.getElementById('chat-input').addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+document.querySelectorAll('#welcome-state button').forEach(b => {
+  b.addEventListener('click', () => { document.getElementById('chat-input').value = b.innerText.trim(); sendMessage(); });
+});
+</script></body></html>

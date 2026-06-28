@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hindsight | AI Ops Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
+
+        body {
+            background-color: #131313;
+            color: #e5e2e1;
+            font-family: 'Geist', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: #c0c1ff;
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .btn-3d {
+            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 0 0 #3730a3;
+        }
+
+        .btn-3d:hover {
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-3d:active {
+            box-shadow: 0 2px 0 0 #3730a3;
+            transform: translateY(2px);
+        }
+
+        .glowing-text {
+            text-shadow: 0 0 15px rgba(192, 193, 255, 0.5);
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .delay-1 { animation-delay: 0.2s; }
+        .delay-2 { animation-delay: 0.4s; }
+        .delay-3 { animation-delay: 0.6s; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#353534",
+                        "surface-tint": "#c0c1ff",
+                        "tertiary": "#ffb2b7",
+                        "on-tertiary": "#67001b",
+                        "background": "#131313",
+                        "surface-container-lowest": "#0e0e0e",
+                        "secondary-fixed": "#acedff",
+                        "on-surface": "#e5e2e1",
+                        "on-secondary": "#003640",
+                        "surface-container-high": "#2a2a2a",
+                        "surface-container": "#201f1f",
+                        "on-background": "#e5e2e1",
+                        "surface-bright": "#3a3939",
+                        "primary": "#c0c1ff",
+                        "surface-container-low": "#1c1b1b",
+                        "secondary-fixed-dim": "#4cd7f6",
+                        "on-primary": "#1000a9",
+                        "inverse-on-surface": "#313030",
+                        "surface-container-highest": "#353534",
+                        "surface-dim": "#131313",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "tertiary-fixed": "#ffdadb",
+                        "inverse-surface": "#e5e2e1",
+                        "primary-container": "#8083ff",
+                        "outline-variant": "#464554",
+                        "error-container": "#93000a",
+                        "tertiary-fixed-dim": "#ffb2b7",
+                        "on-secondary-fixed-variant": "#004e5c",
+                        "on-secondary-fixed": "#001f26",
+                        "on-primary-container": "#0d0096",
+                        "on-tertiary-container": "#5b0017",
+                        "outline": "#908fa0",
+                        "primary-fixed": "#e1e0ff",
+                        "secondary": "#4cd7f6",
+                        "error": "#ffb4ab",
+                        "on-secondary-container": "#00424e",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "secondary-container": "#03b5d3",
+                        "on-tertiary-fixed-variant": "#92002a",
+                        "on-surface-variant": "#c7c4d7",
+                        "tertiary-container": "#ff516a",
+                        "on-primary-fixed": "#07006c",
+                        "on-error": "#690005",
+                        "on-error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#40000d",
+                        "inverse-primary": "#494bd6",
+                        "surface": "#131313"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xl": "40px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "gutter": "20px",
+                        "md": "16px",
+                        "container-max": "1440px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "label-mono": ["JetBrains Mono"],
+                        "headline-xl": ["Geist"],
+                        "body-md": ["Geist"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background selection:bg-primary/30">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-lg py-sm bg-surface/70 dark:bg-surface-container-lowest/70 backdrop-blur-xl border-b border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.1)]">
+<div class="flex items-center gap-md">
+<span class="font-headline-lg text-headline-lg font-bold text-primary tracking-tighter">Hindsight</span>
+<div class="hidden md:flex items-center gap-lg ml-xl font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Chat</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Memory</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">Analytics</a>
+</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="hidden lg:flex items-center bg-surface-container px-md py-xs rounded-full border border-white/5">
+<span class="material-symbols-outlined text-outline mr-sm" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-48 text-on-surface placeholder:text-outline" placeholder="Search operational context..." type="text"/>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="memory">memory</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors cursor-pointer" data-icon="payments">payments</span>
+<div class="flex items-center gap-sm bg-primary/10 pl-sm pr-md py-xs rounded-full border border-primary/20 cursor-pointer active:scale-95 transition-transform">
+<div class="w-8 h-8 rounded-full bg-primary overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional system architect with digital holographic reflections on their face, high-contrast lighting, futuristic obsidian aesthetic, deep indigo and cyan color palette, cinematic focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUOFm5INvASfbuzG2tZeuqvp4w4AlLbamwGtaaZoAzuhDhHTdc1sV7Kqnk3LKsuecLe3sOrLko3jMvkwRW-Bg3FwCDFnlCtSKPBQHKmzDGUtckQwDPOXYIJVk-Q0151-dh2DeBoXKXczTw0UpTb4u6rABKQNpjXc0c6bZHSzkYebnwx5v6s1sem0l9aoLYLEvCAjeDOj97WjW79dbe8USVVRClmOMgEL6rRMCnrHLzscPBoMP7rxkof9ijZ-W7cE-tyjIIqvsBMA"/>
+</div>
+<span class="font-label-mono text-label-mono text-primary">User Name</span>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<header class="relative w-full h-screen min-h-[800px] flex items-center justify-center overflow-hidden pt-xl">
+<!-- WebGL Background -->
+<!-- STITCH_SHADER_START:ANIMATION_8 class="absolute inset-0 w-full h-full" -->
+<div class="absolute inset-0 w-full h-full" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_8" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_8');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+float noise(vec2 p) {
+    return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec3 color1 = vec3(0.07, 0.07, 0.1); // Deep obsidian
+    vec3 color2 = vec3(0.1, 0.1, 0.2); // Dark indigo
+    vec3 accent = vec3(0.39, 0.4, 0.95); // Indigo accent
+
+    float n = noise(uv + u_time * 0.05);
+    float glow = sin(uv.x * 10.0 + u_time) * cos(uv.y * 10.0 + u_time) * 0.5 + 0.5;
+    
+    vec3 finalColor = mix(color1, color2, uv.y);
+    finalColor += accent * glow * 0.1;
+    
+    // Ambient "Nebula" drift
+    float drift = sin(u_time * 0.2 + uv.x * 3.0) * 0.5 + 0.5;
+    finalColor = mix(finalColor, finalColor * 1.2, drift * 0.2);
+
+    gl_FragColor = vec4(finalColor, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_8 -->
+<!-- Center Neural Net -->
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40 mix-blend-screen scale-125">
+<!-- STITCH_THREEJS_START:ANIMATION_7 class="w-[800px] h-[800px]" -->
+<div class="w-[800px] h-[800px]" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_7" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_7');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  const width = container.clientWidth || window.innerWidth;
+const height = container.clientHeight || window.innerHeight;
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+
+renderer.setSize(width, height);
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
+
+// Create a "Neural Network" of floating spheres and connecting lines
+const group = new THREE.Group();
+scene.add(group);
+
+const particlesCount = 40;
+const positions = new Float32Array(particlesCount * 3);
+const spheres = [];
+
+const geometry = new THREE.SphereGeometry(0.05, 16, 16);
+const material = new THREE.MeshPhongMaterial({ 
+    color: 0x6366f1, 
+    emissive: 0x6366f1, 
+    emissiveIntensity: 0.5,
+    shininess: 100 
+});
+
+for (let i = 0; i < particlesCount; i++) {
+    const sphere = new THREE.Mesh(geometry, material);
+    sphere.position.x = (Math.random() - 0.5) * 10;
+    sphere.position.y = (Math.random() - 0.5) * 10;
+    sphere.position.z = (Math.random() - 0.5) * 10;
+    group.add(sphere);
+    spheres.push(sphere);
+}
+
+// Add some ambient light
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0x6366f1, 1, 100);
+pointLight.position.set(5, 5, 5);
+scene.add(pointLight);
+
+camera.position.z = 8;
+
+function animate() {
+    requestAnimationFrame(animate);
+    
+    group.rotation.y += 0.002;
+    group.rotation.x += 0.001;
+    
+    spheres.forEach((s, i) => {
+        s.position.y += Math.sin(Date.now() * 0.001 + i) * 0.002;
+    });
+
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    const w = container.clientWidth || window.innerWidth;
+    const h = container.clientHeight || window.innerHeight;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+});
+
+animate();
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_7 -->
+</div>
+<div class="relative z-10 max-w-4xl px-lg text-center">
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-md fade-in-up">
+                The <span class="text-primary italic">Intelligence</span> layer for your Operations.
+            </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mb-xl max-w-2xl mx-auto fade-in-up delay-1">
+                Hindsight indexes your incidents, memory fragments, and operational logs into a searchable, neural context for your team. Empower your architects with pre-cog infrastructure awareness.
+            </p>
+<div class="flex flex-col sm:flex-row gap-md justify-center fade-in-up delay-2">
+<button class="btn-3d px-xl py-md rounded-xl font-bold text-on-primary flex items-center justify-center gap-sm">
+                    Launch Console
+                    <span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+</button>
+<button class="bg-white/5 backdrop-blur-xl border border-white/10 px-xl py-md rounded-xl font-bold text-on-surface hover:bg-white/10 transition-all flex items-center justify-center gap-sm">
+                    View Documentation
+                    <span class="material-symbols-outlined" data-icon="description">description</span>
+</button>
+</div>
+</div>
+<div class="absolute bottom-xl left-1/2 -translate-x-1/2 animate-bounce opacity-40">
+<span class="material-symbols-outlined text-primary" data-icon="keyboard_double_arrow_down">keyboard_double_arrow_down</span>
+</div>
+</header>
+<!-- Stats Section -->
+<section class="py-xl bg-surface-container-lowest relative z-10">
+<div class="max-w-container-max mx-auto px-xl">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-xl">
+<div class="text-center p-lg fade-in-up">
+<div class="font-headline-xl text-headline-xl text-primary glowing-text mb-sm">12k+</div>
+<div class="font-label-mono text-label-mono uppercase tracking-[0.2em] text-outline">Incidents Indexed</div>
+</div>
+<div class="text-center p-lg fade-in-up delay-1">
+<div class="font-headline-xl text-headline-xl text-secondary glowing-text mb-sm">45m</div>
+<div class="font-label-mono text-label-mono uppercase tracking-[0.2em] text-outline">Memory Fragments</div>
+</div>
+<div class="text-center p-lg fade-in-up delay-2">
+<div class="font-headline-xl text-headline-xl text-tertiary glowing-text mb-sm">&lt;1ms</div>
+<div class="font-label-mono text-label-mono uppercase tracking-[0.2em] text-outline">Sub-millisecond Latency</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-xl relative overflow-hidden">
+<div class="max-w-container-max mx-auto px-xl">
+<div class="mb-xl text-center fade-in-up">
+<span class="font-label-mono text-label-mono text-primary bg-primary/10 px-md py-xs rounded-full border border-primary/20">OPERATIONAL CAPABILITIES</span>
+<h2 class="font-headline-lg text-headline-lg mt-md">Engineered for Hyper-scale</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-lg">
+<!-- CascadeFlow Routing -->
+<div class="glass-card p-xl rounded-xl flex flex-col items-start gap-md group fade-in-up">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-secondary" data-icon="route" style="font-variation-settings: 'FILL' 1;">route</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">CascadeFlow Routing</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                        Intelligently distribute incident context to the most qualified nodes. Reduced cognitive load through deterministic data flow.
+                    </p>
+<div class="mt-auto pt-md flex items-center gap-xs font-label-mono text-label-mono text-secondary">
+                        Tier 1 Protocol <span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<!-- Neural Persistence -->
+<div class="glass-card p-xl rounded-xl flex flex-col items-start gap-md group fade-in-up delay-1">
+<div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">Neural Persistence</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                        Historical data isn't just stored; it's learned. Every micro-outage strengthens the predictive model of your architecture.
+                    </p>
+<div class="mt-auto pt-md flex items-center gap-xs font-label-mono text-label-mono text-primary">
+                        Tier 1 Intelligence <span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+<!-- Budget Guardrails -->
+<div class="glass-card p-xl rounded-xl flex flex-col items-start gap-md group fade-in-up delay-2">
+<div class="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-tertiary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile">Budget Guardrails</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                        Dynamic cost-capping for AI inference. Ensure your Ops budget remains stable even during massive system scale events.
+                    </p>
+<div class="mt-auto pt-md flex items-center gap-xs font-label-mono text-label-mono text-tertiary">
+                        Sensitive Tier <span class="material-symbols-outlined text-[14px]" data-icon="arrow_forward">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Bento Showcase -->
+<section class="py-xl bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-xl">
+<div class="grid grid-cols-12 gap-lg h-[600px]">
+<div class="col-span-12 lg:col-span-8 glass-card rounded-2xl overflow-hidden relative group p-lg">
+<div class="absolute inset-0 opacity-40 group-hover:opacity-60 transition-opacity">
+<img class="w-full h-full object-cover" data-alt="A sprawling, futuristic data center visualization with glowing blue fiber optic lines, holographic floating screens showing complex system architecture, cinematic depth of field, neon accents on obsidian surfaces, high-tech engineering aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJU1mxKGVI8Dv1zbe0eSBcWtoh1aaR1dFQ3ZuqdIQcALc4NJEQ9o3kGQnWJnqmlb5KNoOsk_O0ePbpt9BZGUlaHdqf3GgDzs4K4-L8HUQHR1dvwUnKkftxMJroLFG_hJLprXLxOTxhVgY1mZ28ipqlCUusSszNBviVTra2L1KlnRjP-TKFN3EIFiDM1NfOcaHsB_DB5sMx7YH5Cnon9_CkFyxXiQSLJVxi84txPU2Oy6WkZeuhuGW479ZaJKlOgwtWqBXUvslPjA"/>
+</div>
+<div class="relative z-10 flex flex-col justify-end h-full">
+<span class="bg-secondary/20 text-secondary border border-secondary/30 self-start px-md py-xs rounded-full text-label-mono mb-sm">CORE DASHBOARD</span>
+<h4 class="font-headline-lg text-headline-lg max-w-md">Omniscient View of your Neural Stack</h4>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-lg">
+<div class="flex-1 glass-card rounded-2xl p-lg flex flex-col justify-center items-center text-center">
+<span class="material-symbols-outlined text-primary text-[48px] mb-md" data-icon="cloud_done">cloud_done</span>
+<div class="font-label-mono text-label-mono text-outline">UPTIME COMMITMENT</div>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">99.999%</div>
+</div>
+<div class="flex-1 glass-card rounded-2xl overflow-hidden relative">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-transparent"></div>
+<div class="p-lg relative z-10">
+<h5 class="font-body-md text-body-md font-bold mb-xs">Budget Guardrail Active</h5>
+<div class="w-full h-2 bg-white/10 rounded-full mt-md overflow-hidden">
+<div class="h-full bg-primary w-2/3 shadow-[0_0_10px_rgba(192,193,255,0.8)]"></div>
+</div>
+<div class="flex justify-between mt-sm text-body-sm text-outline">
+<span>67% Consumed</span>
+<span>$420 left</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="py-xl border-t border-white/5 bg-surface-container-lowest">
+<div class="max-w-container-max mx-auto px-xl">
+<div class="flex flex-col md:flex-row justify-between items-start gap-xl">
+<div class="max-w-sm">
+<span class="font-headline-lg text-headline-lg font-bold text-primary">Hindsight</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-md">
+                        Deep Space clarity for high-stakes operational intelligence. Managed AI infrastructure for the hyper-vigilant team.
+                    </p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-xl">
+<div class="flex flex-col gap-sm">
+<span class="font-label-mono text-label-mono text-outline uppercase">Resources</span>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">API Reference</a>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Incident Logs</a>
+</div>
+<div class="flex flex-col gap-sm">
+<span class="font-label-mono text-label-mono text-outline uppercase">Platform</span>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Console</a>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Neural Hub</a>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Analytics</a>
+</div>
+<div class="flex flex-col gap-sm">
+<span class="font-label-mono text-label-mono text-outline uppercase">Legal</span>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">Terms</a>
+<a class="font-body-sm text-body-sm hover:text-primary transition-colors" href="#">SLA</a>
+</div>
+</div>
+</div>
+<div class="mt-xl pt-lg border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-md">
+<p class="font-label-mono text-label-mono text-outline">© 2024 HINDSIGHT OPS INC. ALL RIGHTS RESERVED.</p>
+<div class="flex items-center gap-lg">
+<span class="font-label-mono text-label-mono text-primary flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                        SYSTEMS NOMINAL
+                    </span>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary" data-icon="public">public</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary" data-icon="monitoring">monitoring</span>
+</div>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Micro-interaction for buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mousedown', () => {
+                btn.style.transform = 'translateY(1px)';
+            });
+            btn.addEventListener('mouseup', () => {
+                btn.style.transform = '';
+            });
+        });
+
+        // Intersection Observer for fade-in animations on scroll
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.classList.add('animate__animated', 'animate__fadeInUp');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body></html>

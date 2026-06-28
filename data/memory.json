@@ -1,0 +1,136 @@
+[
+  {
+    "id": 1,
+    "user": "Ravi",
+    "date": "2025-06-02",
+    "category": "IT",
+    "severity": "high",
+    "content": "VPN not connecting after Windows update",
+    "resolution": "Uninstalled Cisco Secure Client, reinstalled v5.0.04032, restarted. Fixed.",
+    "tags": [
+      "vpn",
+      "cisco",
+      "windows",
+      "network",
+      "update"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "id": 2,
+    "user": "Priya",
+    "date": "2025-05-18",
+    "category": "IT",
+    "severity": "medium",
+    "content": "Outlook not syncing emails, stuck on loading",
+    "resolution": "Cleared OST cache file at AppData/Local/Microsoft/Outlook. Restarted Outlook. Fixed.",
+    "tags": [
+      "outlook",
+      "email",
+      "sync",
+      "microsoft",
+      "cache"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "id": 3,
+    "user": "Arjun",
+    "date": "2025-04-30",
+    "category": "IT",
+    "severity": "low",
+    "content": "Printer shows offline even though it's on",
+    "resolution": "Removed printer, re-added via IP address 192.168.1.105. Updated driver from HP website. Fixed.",
+    "tags": [
+      "printer",
+      "offline",
+      "driver",
+      "hp"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "id": 4,
+    "user": "Meena",
+    "date": "2025-06-10",
+    "category": "IT",
+    "severity": "medium",
+    "content": "Laptop battery draining very fast, overheating on idle",
+    "resolution": "Disabled background apps in Task Manager, updated BIOS firmware. Battery calibrated. Fixed.",
+    "tags": [
+      "battery",
+      "laptop",
+      "overheating",
+      "performance",
+      "bios"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "id": 5,
+    "user": "Karan",
+    "date": "2025-06-15",
+    "category": "IT",
+    "severity": "high",
+    "content": "Cannot access company SharePoint, getting access denied error",
+    "resolution": "Re-authenticated Microsoft 365 account, cleared browser cache, re-added site to trusted zones. Fixed.",
+    "tags": [
+      "sharepoint",
+      "access",
+      "microsoft365",
+      "authentication",
+      "browser"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "id": 6,
+    "user": "Sara",
+    "date": "2025-05-25",
+    "category": "HR",
+    "severity": "low",
+    "content": "How many paid leaves do I have remaining?",
+    "resolution": "Directed to HR portal at hr.company.com, under Leave Balance section. 8 PL remaining.",
+    "tags": [
+      "leave",
+      "paid",
+      "hr",
+      "balance",
+      "holiday"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "id": 7,
+    "user": "Dev Team",
+    "date": "2025-06-20",
+    "category": "Incident",
+    "severity": "critical",
+    "content": "Production API down, 500 errors on all endpoints",
+    "resolution": "Database connection pool exhausted due to a query leak in the new release. Rolled back v2.3.1, increased pool size to 50. Fixed in 23 minutes.",
+    "tags": [
+      "production",
+      "api",
+      "database",
+      "outage",
+      "connection",
+      "pool"
+    ],
+    "recurrenceCount": 1
+  },
+  {
+    "user": "Employee",
+    "content": "VPN not connecting after Windows update",
+    "category": "IT",
+    "severity": "low",
+    "resolution": "This matches Ravi's incident from 2025-06-02. This is a recurring issue.\n\n1.  Uninstall Cisco Secure Client.\n2.  Reinstall Cisco Secure Client v5.0.04032.\n3.  Restart your computer.\n\nIf the issue persists, please reply to this thread.\n\n💾 Memory used — Ravi · 2025-06-02",
+    "tags": [
+      "connecting",
+      "windows",
+      "update"
+    ],
+    "id": 1782639695935,
+    "date": "2026-06-28",
+    "recurrenceCount": 1
+  }
+]

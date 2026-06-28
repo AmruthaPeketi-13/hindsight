@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hindsight | Memory Browser</title>
+<script src="js/auth-check.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-card:hover {
+            border-color: rgba(192, 193, 255, 0.3);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+        }
+        .btn-3d {
+            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-3d:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+        .btn-3d:active {
+            transform: translateY(1px);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .glow-cyan { box-shadow: 0 0 10px rgba(76, 215, 246, 0.2); }
+        .glow-indigo { box-shadow: 0 0 10px rgba(192, 193, 255, 0.2); }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container-lowest": "#0e0e0e", "outline-variant": "#464554", "primary-fixed-dim": "#c1c1ff", "surface-variant": "#353534", "on-primary": "#221f85", "on-secondary-container": "#00424e", "on-error": "#690005", tertiary: "#ffb2b7", "surface-container-low": "#1c1b1b", "on-error-container": "#ffdad6", "on-background": "#e5e2e1", "on-surface-variant": "#c7c4d7", secondary: "#4cd7f6", "tertiary-container": "#ff516a", "surface-bright": "#3a3939", "surface-container-high": "#2a2a2a", background: "#131313", "on-tertiary": "#67001b", "inverse-primary": "#5252b5", "on-primary-container": "#1a157f", "on-surface": "#e5e2e1", "tertiary-fixed-dim": "#ffb2b7", "on-primary-fixed": "#0a006b", surface: "#131313", error: "#ffb4ab", "secondary-fixed-dim": "#4cd7f6", "on-secondary-fixed": "#001f26", primary: "#c1c1ff", "tertiary-fixed": "#ffdadb", "secondary-container": "#03b5d3", "on-tertiary-container": "#5b0017", "inverse-on-surface": "#313030", "on-tertiary-fixed": "#40000d", "primary-container": "#8586ec", "inverse-surface": "#e5e2e1", "on-secondary": "#003640", "surface-container-highest": "#353534", "on-secondary-fixed-variant": "#004e5c", "surface-container": "#201f1f", "surface-tint": "#c1c1ff", outline: "#908fa0", "secondary-fixed": "#acedff", "primary-fixed": "#e2dfff", "on-primary-fixed-variant": "#3a399c", "error-container": "#93000a", "on-tertiary-fixed-variant": "#92002a", "surface-dim": "#131313"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {lg: "24px", "container-max": "1440px", sm: "8px", md: "16px", xs: "4px", xl: "40px", base: "4px", gutter: "20px"}, fontFamily: {"body-md": ["Geist"], "headline-xl": ["Geist"], "headline-lg-mobile": ["Geist"], "headline-lg": ["Geist"], "label-mono": ["JetBrains Mono"], "body-sm": ["Geist"], headline: ["Geist"], display: ["Geist"], body: ["Geist"], label: ["Jetbrains Mono"]}, fontSize: {"body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-xl": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-mono": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden h-screen flex">
+<!-- WebGL Background Overlay -->
+<!-- SideNavBar (Shared Component) -->
+<aside id="mobile-menu" class="fixed left-0 -translate-x-full md:translate-x-0 transition-transform duration-300 top-0 h-full w-64 flex flex-col p-md z-40 bg-surface-container-low/60 dark:bg-surface-container-low/60 backdrop-blur-2xl border-r border-white/5 shadow-2xl">
+<div class="flex items-center gap-md mb-xl px-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-on-primary-container">memory</span>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-none">Hindsight</h1>
+<p class="font-label-mono text-label-mono text-outline opacity-70">AI Ops Manager</p>
+</div>
+</div>
+<nav class="flex-1 space-y-sm">
+<!-- Active Tab: Chat -->
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/chat.html">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                Chat
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-primary-fixed-dim bg-primary/10 rounded-lg font-label-mono text-label-mono transition-transform translate-x-1" href="/vault.html">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+                Memory
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/analytics.html">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/settings.html">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-error rounded-lg font-label-mono text-label-mono transition-all mt-4" href="#" onclick="logout()">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</nav>
+<div class="mt-auto space-y-sm">
+<div class="p-sm bg-surface-container-high/40 rounded-lg border border-white/5 mb-md">
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest mb-xs">Active Instance</p>
+<div class="flex items-center justify-between">
+<span class="font-label-mono text-label-mono text-secondary">GPT-4o</span>
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+</div>
+</div>
+<button onclick="window.location.reload()" class="w-full mt-sm py-sm bg-primary text-on-primary font-label-mono text-label-mono rounded-lg active:scale-95 transition-transform">
+                New Session
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col w-full min-h-screen md:ml-64 xl:mr-[320px] relative z-10 transition-all pt-20 md:pt-0">
+<!-- Header Section -->
+<header class="flex justify-between items-end mb-xl">
+<div>
+<nav class="flex gap-xs items-center text-outline-variant text-body-sm mb-xs">
+<span>Explorer</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary-fixed-dim">Vault</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-xs">Memory Vault</h2>
+<p class="font-body-sm text-body-sm text-outline">Manage and audit your persistent neural context.</p>
+</div>
+<button onclick="const m = prompt('Enter a new operational memory:'); if(m) { fetch('/api/memory', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({content: m})}).then(()=>window.location.reload()) }" class="btn-3d flex items-center gap-sm px-lg py-sm rounded-xl text-on-primary font-bold shadow-lg">
+<span class="material-symbols-outlined">add</span>
+<span class="font-label-mono uppercase tracking-widest text-[11px]">Add Memory</span>
+</button>
+</header>
+<!-- Stats Bar (Horizontal Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-md mb-xl">
+<div class="glass-card p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
+<span class="material-symbols-outlined text-primary">database</span>
+</div>
+<div>
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest">Total Vectors</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface" id="stat-total">0</p>
+</div>
+</div>
+<div class="glass-card p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center border border-secondary/20">
+<span class="material-symbols-outlined text-secondary">memory</span>
+</div>
+<div>
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest">Active Hits</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">1.2k</p>
+</div>
+</div>
+<div class="glass-card p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-tertiary-container/10 flex items-center justify-center border border-tertiary-container/20">
+<span class="material-symbols-outlined text-tertiary-container">cyclone</span>
+</div>
+<div>
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest">Recurrent Issues</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface" id="stat-recurrent">0</p>
+</div>
+</div>
+<div class="glass-card p-md rounded-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center border border-error/20">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div>
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest">Orphaned Nodes</p>
+<p class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">14</p>
+</div>
+</div>
+</div>
+<!-- Search & Filters -->
+<div class="flex flex-col md:flex-row gap-md mb-lg">
+<div class="relative flex-1 group">
+<span class="material-symbols-outlined absolute left-md top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-surface-container-high/50 border border-white/10 rounded-xl py-sm pl-xl pr-md text-body-sm text-on-surface focus:outline-none focus:border-primary/50 focus:bg-surface-container-high transition-all" placeholder="Search operational memories by keyword or vector ID..." type="text"/>
+</div>
+<div class="flex items-center gap-md overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+<div class="flex items-center gap-xs">
+<span class="text-[10px] font-label-mono text-outline uppercase mr-xs">Domain:</span>
+<button onclick="window.location.href='?category=IT'" class="px-md py-xs rounded-lg bg-white/5 border border-white/5 text-label-mono text-[10px] uppercase hover:bg-white/10 transition-colors">IT</button>
+<button onclick="window.location.href='?category=HR'" class="px-md py-xs rounded-lg bg-white/5 border border-white/5 text-label-mono text-[10px] uppercase hover:bg-white/10 transition-colors">HR</button>
+<button onclick="window.location.href='?category=General'" class="px-md py-xs rounded-lg bg-white/5 border border-white/5 text-label-mono text-[10px] uppercase hover:bg-white/10 transition-colors">General</button>
+</div>
+<div class="h-8 w-px bg-white/5"></div>
+<div class="flex items-center gap-xs">
+<span class="text-[10px] font-label-mono text-outline uppercase mr-xs">Tier:</span>
+<button onclick="window.location.href='?severity=HIGH'" class="px-sm py-1 rounded bg-error/20 text-error text-[10px] font-bold">HIGH</button>
+<button onclick="window.location.href='?severity=MED'" class="px-sm py-1 rounded bg-white/5 text-outline-variant text-[10px] font-bold hover:text-white transition-colors">MED</button>
+<button onclick="window.location.href='?severity=LOW'" class="px-sm py-1 rounded bg-white/5 text-outline-variant text-[10px] font-bold hover:text-white transition-colors">LOW</button>
+<button onclick="window.location.href='?'" class="px-sm py-1 rounded border border-white/10 text-outline text-[10px] font-bold hover:bg-white/5 transition-colors">CLEAR</button>
+</div>
+</div>
+<!-- Memory List Content -->
+<div class="space-y-sm">
+<!-- Memory Card 1 -->
+<div class="glass-card p-md rounded-xl hover:translate-x-1">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="Close-up headshot of a professional DevOps engineer with a sharp, modern haircut, wearing tactical tech-wear in a dark studio setting. Moody indigo and cyan rim lighting highlights the contours of the face against a deep obsidian background. Cinematic high-fidelity digital photography with professional bokeh." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdZJ8wsbwYsuM_99J_i_E08ZkbrocV0gz5ft6N2ECgadbJ6SqMvWCU0iE_A6E1jSP285vDhScZH6htEaD6Gp9CWEjG_NX8K_gkdOXa_sC2UiKpxSAf5LenWmO3IsnSt_EdI-I0_C24Rd2yHsxSgMwcVxF5Cvd1EnFj1mUl8QA6kR5-1SZKjwnMFc7oeT5ykVnkoSQWERE85Hyj6V8dCygQP1Pe33xwYvkoAKJnO072iEt5CNlss6XP7X-WvAnwTwtytgxOdRN0wQ"/>
+</div>
+<div>
+<h4 class="text-on-surface font-bold text-body-md">Sarah Jenkins</h4>
+<p class="text-outline text-body-sm font-label-mono">#MEM-88429 • 2m ago</p>
+</div>
+</div>
+<div class="flex gap-sm">
+<span class="px-md py-xs rounded-full bg-error/10 border border-error/30 text-error text-label-mono text-[10px] uppercase font-bold flex items-center gap-xs">
+                            Critical Alert
+                        </span>
+<span class="px-md py-xs rounded-full bg-primary/10 border border-primary/30 text-primary text-label-mono text-[10px] uppercase font-bold flex items-center gap-xs">
+                            IT Infrastructure
+                        </span>
+</div>
+</div>
+<div class="pl-[56px]">
+<p class="text-on-surface-variant text-body-md mb-md leading-relaxed">
+                        Database connection timeout in <span class="text-secondary">us-east-1</span> cluster. Root cause identified as lease expiration on Vault secrets.
+                    </p>
+<div class="flex items-center gap-xl">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified</span>
+<span class="text-outline text-body-sm">Resolved via Auto-Renew</span>
+</div>
+<div class="flex items-center gap-sm bg-error/5 px-sm py-xs rounded border border-error/10">
+<span class="material-symbols-outlined text-error text-[18px]">history</span>
+<span class="text-error text-label-mono text-[10px] font-bold">RECURRED 3X</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Memory Card 2 -->
+<div class="glass-card p-md rounded-xl hover:translate-x-1">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="A portrait of a senior HR director with a calm and wise expression, wearing a minimalist black turtleneck. The lighting is soft and diffused with a slight amber glow, set against a dark, tech-inspired office background. The aesthetic is clean, professional, and high-end corporate modern." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUADlpHoW4K516sOnBjnHdNpLMEm-F7JhFLOsHTO8nmecmUh2jlvPZOIqoaCCB2ZiimbVMB7I3OwEwn9wJaHZsCr_dXNQAbniG9wU4qRe3QszxHNwKkudHA6kSCj7xbDvvFvEj3llklDgj90u7EY_erBhzOZVw60hhQAMZEV5XY1hy9j3n8A91iPFLUZNSZiLbVY5ThKXUNjWvUW_aHQ_3jwvRWse3SLa0WBJjBOU-DxNzcaJ4iIatf6IRhqYPc3SWME38KgF6HA"/>
+</div>
+<div>
+<h4 class="text-on-surface font-bold text-body-md">Markus Thorne</h4>
+<p class="text-outline text-body-sm font-label-mono">#MEM-88430 • 15m ago</p>
+</div>
+</div>
+<div class="flex gap-sm">
+<span class="px-md py-xs rounded-full bg-tertiary/10 border border-tertiary/30 text-tertiary text-label-mono text-[10px] uppercase font-bold">
+                            Sensitive
+                        </span>
+<span class="px-md py-xs rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-label-mono text-[10px] uppercase font-bold">
+                            HR Protocol
+                        </span>
+</div>
+</div>
+<div class="pl-[56px]">
+<p class="text-on-surface-variant text-body-md mb-md leading-relaxed">
+                        Quarterly performance review cycle initiated for <span class="text-primary">Engineering Alpha</span>. Privacy filters applied to salary data blocks.
+                    </p>
+<div class="flex items-center gap-xl">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-outline text-[18px]">pending</span>
+<span class="text-outline text-body-sm">Awaiting Signature</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Memory Card 3 -->
+<div class="glass-card p-md rounded-xl hover:translate-x-1">
+<div class="flex justify-between items-start mb-sm">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg overflow-hidden border border-white/10">
+<img class="w-full h-full object-cover" data-alt="Professional profile of a security operations center analyst. Young adult with intense focus, illuminated by the blue light of multiple monitors. The style is futuristic and cybernetic with a shallow depth of field. High-contrast lighting with primary indigo and cyan accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcVfno64waIfSaYOYvSSmwmK-mmo83R7ZuxFgZBB1tTG1Ddm_Bvc_R2aACKABbPE89U5lE2ZqZANUO9qUBK2hjDlrO-alUm2YTGstJPMLGM5CWtgfVQeq02UhgmhaLTKsIVfBL6WPjFc13WU-O9Q9zJLo-tb1k6C0zId0FiThjKbgKkRcxAX_oKogCvXIGabvTQ6Nqh26_ZAHVOk4tQu5Bn90wopWWpIDjVuv7CntnsiXc6MbxBSUY19uH173euIqsaKtPWZW9ZA"/>
+</div>
+<div>
+<h4 class="text-on-surface font-bold text-body-md">Elena Rodriguez</h4>
+<p class="text-outline text-body-sm font-label-mono">#MEM-88431 • 1h ago</p>
+</div>
+</div>
+<div class="flex gap-sm">
+<span class="px-md py-xs rounded-full bg-secondary/10 border border-secondary/30 text-secondary text-label-mono text-[10px] uppercase font-bold">
+                            Network Incident
+                        </span>
+</div>
+</div>
+<div class="pl-[56px]">
+<p class="text-on-surface-variant text-body-md mb-md leading-relaxed">
+                        Unusual egress traffic detected from <span class="text-tertiary">Node_09</span>. Automated sandbox isolation completed successfully.
+                    </p>
+<div class="flex items-center gap-xl">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-error text-[18px]">security</span>
+<span class="text-on-surface text-body-sm">Mitigated via Sentinel</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Right Sidebar Stats -->
+<aside class="hidden xl:block fixed right-0 top-0 h-full w-[320px] bg-surface-container-lowest/40 backdrop-blur-xl border-l border-white/5 p-lg z-40 flex flex-col overflow-y-auto custom-scrollbar">
+<h3 class="font-label-mono text-label-mono text-outline uppercase tracking-widest mb-lg">System Insights</h3>
+<div class="space-y-lg">
+<!-- Analytics Widget -->
+<div class="glass-card p-md rounded-xl">
+<div class="flex justify-between items-center mb-md">
+<span class="text-body-sm font-bold text-on-surface">Data Retention</span>
+<span class="text-outline text-body-sm font-label-mono">94%</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 94%"></div>
+</div>
+<p class="text-[11px] text-outline mt-sm leading-tight">Storage optimization will trigger at 98% threshold.</p>
+</div>
+<!-- Recurring Issues List -->
+<div>
+<span class="font-label-mono text-[10px] text-outline uppercase tracking-widest block mb-md">Top Recurring Issues</span>
+<div class="space-y-sm">
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-white/5">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-error animate-pulse"></div>
+<span class="text-body-sm text-on-surface-variant">Auth Handshake</span>
+</div>
+<span class="text-error font-label-mono text-xs">12x</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-white/5">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-secondary"></div>
+<span class="text-body-sm text-on-surface-variant">DNS Latency</span>
+</div>
+<span class="text-secondary font-label-mono text-xs">8x</span>
+</div>
+<div class="flex items-center justify-between p-sm rounded-lg bg-surface-container-low border border-white/5">
+<div class="flex items-center gap-sm">
+<div class="w-2 h-2 rounded-full bg-primary-container"></div>
+<span class="text-body-sm text-on-surface-variant">UI Glitch (v2.4)</span>
+</div>
+<span class="text-primary-fixed-dim font-label-mono text-xs">5x</span>
+</div>
+</div>
+</div>
+<!-- Mini Map / Geo-Insight -->
+<div class="glass-card rounded-xl overflow-hidden h-48 relative border-none">
+<div class="absolute inset-0 z-0 bg-cover bg-center opacity-40 grayscale" data-alt="A dark, high-contrast satellite view of a metropolitan global network hub with glowing nodes and data pathways connecting major server centers. Deep space aesthetic with cobalt blue and vibrant cyan neon highlights. Futuristic UI overlay with latitude and longitude coordinates." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAN7NBFgZvRcbTpPy1reQGsdsq7FRgSJV-pKiQP8k3d-c0AICudpGOKJU5D3xBOmABJbTPqpSF3wTRGHatSV0bEQr6lmENTm4JCvkf7TnSA5ygZh78VuVHsapG61Z7bHzTLnPJzBxgAAT3dVLBzUPE7aiXx_LLqVW81YbnPrbvXomxsCdaUErh6pkmfke-49mcEBTkxNmHNeMFs6NISPCnDlxTiXuXyf6m5XvLk2CH7yvK-7d1H-sCIIhPtNDf2kQn3p4irfUdY1g')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent z-10"></div>
+<div class="relative z-20 p-md h-full flex flex-col justify-end">
+<span class="font-label-mono text-[10px] text-primary uppercase tracking-widest">Global Activity</span>
+<h5 class="text-body-md font-bold text-on-surface">North America Cluster</h5>
+<p class="text-[10px] text-outline">Primary ingestion active (Latency: 14ms)</p>
+</div>
+</div>
+<!-- Footer Link -->
+<button class="w-full py-sm rounded-lg border border-primary/20 bg-primary/5 text-primary font-label-mono text-[11px] uppercase tracking-widest hover:bg-primary/10 transition-colors">
+                View Full Audit Log
+            </button>
+</div>
+</aside>
+
+<script>
+window.addEventListener('load', async () => {
+    try {
+        const query = window.location.search;
+        const res = await fetch('/api/memory' + query);
+        const data = await res.json();
+        const grid = document.querySelector('.grid');
+        if (grid && data.memories) {
+            grid.innerHTML = data.memories.map(m => `
+                <div class="glass-card rounded-2xl p-lg hover:border-primary transition-all group">
+                    <div class="flex justify-between items-start mb-md">
+                        <span class="font-label-mono text-label-mono text-outline">${m.date}</span>
+                        <span class="px-sm py-1 rounded bg-primary/10 border border-primary/20 text-primary font-label-mono text-[10px] uppercase">${m.category || 'LOG'}</span>
+                    </div>
+                    <h3 class="font-body-md text-body-md text-on-surface font-semibold mb-sm">${m.user}</h3>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant mb-md">${m.content}</p>
+                </div>
+            `).join('');
+        }
+    } catch(e) {}
+});
+</script></body></html>

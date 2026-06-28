@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Settings | Hindsight AI Ops</title>
+<script src="js/auth-check.js"></script>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(10, 10, 10, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(192, 193, 255, 0.3);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.05);
+        }
+        .btn-3d {
+            background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+        }
+        .btn-3d:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+        .btn-3d:active {
+            transform: translateY(1px);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(192, 193, 255, 0.1);
+            border-radius: 10px;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            height: 4px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: #c0c1ff;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(192, 193, 255, 0.5);
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #c0c1ff;
+        }
+        .toggle-checkbox:checked + .toggle-label .toggle-dot {
+            transform: translateX(100%);
+        }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container-lowest": "#0e0e0e", "outline-variant": "#464554", "primary-fixed-dim": "#c1c1ff", "surface-variant": "#353534", "on-primary": "#221f85", "on-secondary-container": "#00424e", "on-error": "#690005", tertiary: "#ffb2b7", "surface-container-low": "#1c1b1b", "on-error-container": "#ffdad6", "on-background": "#e5e2e1", "on-surface-variant": "#c7c4d7", secondary: "#4cd7f6", "tertiary-container": "#ff516a", "surface-bright": "#3a3939", "surface-container-high": "#2a2a2a", background: "#131313", "on-tertiary": "#67001b", "inverse-primary": "#5252b5", "on-primary-container": "#1a157f", "on-surface": "#e5e2e1", "tertiary-fixed-dim": "#ffb2b7", "on-primary-fixed": "#0a006b", surface: "#131313", error: "#ffb4ab", "secondary-fixed-dim": "#4cd7f6", "on-secondary-fixed": "#001f26", primary: "#c1c1ff", "tertiary-fixed": "#ffdadb", "secondary-container": "#03b5d3", "on-tertiary-container": "#5b0017", "inverse-on-surface": "#313030", "on-tertiary-fixed": "#40000d", "primary-container": "#8586ec", "inverse-surface": "#e5e2e1", "on-secondary": "#003640", "surface-container-highest": "#353534", "on-secondary-fixed-variant": "#004e5c", "surface-container": "#201f1f", "surface-tint": "#c1c1ff", outline: "#908fa0", "secondary-fixed": "#acedff", "primary-fixed": "#e2dfff", "on-primary-fixed-variant": "#3a399c", "error-container": "#93000a", "on-tertiary-fixed-variant": "#92002a", "surface-dim": "#131313"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {lg: "24px", "container-max": "1440px", sm: "8px", md: "16px", xs: "4px", xl: "40px", base: "4px", gutter: "20px"}, fontFamily: {"body-md": ["Geist"], "headline-xl": ["Geist"], "headline-lg-mobile": ["Geist"], "headline-lg": ["Geist"], "label-mono": ["JetBrains Mono"], "body-sm": ["Geist"], headline: ["Geist"], display: ["Geist"], body: ["Geist"], label: ["Jetbrains Mono"]}, fontSize: {"body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-xl": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-mono": ["12px", {lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden selection:bg-primary selection:text-on-primary">
+<!-- Global Background Shader -->
+<!-- TopNavBar -->
+
+<!-- SideNavBar -->
+<aside id="mobile-menu" class="fixed left-0 -translate-x-full md:translate-x-0 transition-transform duration-300 top-0 h-full w-64 flex flex-col p-md z-40 bg-surface-container-low/60 dark:bg-surface-container-low/60 backdrop-blur-2xl border-r border-white/5 shadow-2xl">
+<div class="flex items-center gap-md mb-xl px-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-on-primary-container">memory</span>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-none">Hindsight</h1>
+<p class="font-label-mono text-label-mono text-outline opacity-70">AI Ops Manager</p>
+</div>
+</div>
+<nav class="flex-1 space-y-sm">
+<!-- Active Tab: Chat -->
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/chat.html">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                Chat
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/vault.html">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+                Memory
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface rounded-lg font-label-mono text-label-mono transition-all" href="/analytics.html">
+<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-primary-fixed-dim bg-primary/10 rounded-lg font-label-mono text-label-mono transition-transform translate-x-1" href="/settings.html">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                Settings
+            </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-error rounded-lg font-label-mono text-label-mono transition-all mt-4" href="#" onclick="logout()">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Logout
+            </a>
+</nav>
+<div class="mt-auto space-y-sm">
+<div class="p-sm bg-surface-container-high/40 rounded-lg border border-white/5 mb-md">
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest mb-xs">Active Instance</p>
+<div class="flex items-center justify-between">
+<span class="font-label-mono text-label-mono text-secondary">GPT-4o</span>
+<span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+</div>
+</div>
+<button onclick="window.location.reload()" class="w-full mt-sm py-sm bg-primary text-on-primary font-label-mono text-label-mono rounded-lg active:scale-95 transition-transform">
+                New Session
+            </button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col w-full md:w-[calc(100%-16rem)] min-h-screen md:ml-64 relative z-10 transition-all p-lg pt-20 md:pt-lg">
+<div class="mb-xl">
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-2">System Settings</h1>
+<p class="text-on-surface-variant max-w-2xl">Configure your operational intelligence parameters. Adjust tier models, set budgetary constraints, and manage long-term neural memory.</p>
+</div>
+<div class="grid grid-cols-12 gap-lg">
+<!-- CascadeFlow Config -->
+<section class="col-span-12 lg:col-span-8">
+<div class="glass-card rounded-xl p-lg flex flex-col gap-lg h-full">
+<div class="flex items-center gap-md border-b border-white/5 pb-md">
+<span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">fluid_med</span>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">CascadeFlow Config</h3>
+<p class="text-body-sm text-outline">Manage model routing and sensitive filtering</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="flex flex-col gap-sm">
+<label class="font-label-mono text-[11px] text-outline-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#2dd4bf]"></span> TIER 1 MODEL
+                            </label>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg p-md text-body-sm focus:ring-2 focus:ring-secondary/50 outline-none transition-all" type="text" value="GPT-4o-mini"/>
+</div>
+<div class="flex flex-col gap-sm">
+<label class="font-label-mono text-[11px] text-outline-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#fbbf24]"></span> TIER 2 MODEL
+                            </label>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg p-md text-body-sm focus:ring-2 focus:ring-secondary/50 outline-none transition-all" type="text" value="GPT-4o"/>
+</div>
+<div class="flex flex-col gap-sm">
+<label class="font-label-mono text-[11px] text-outline-variant flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-[#e11d48]"></span> TIER 3 MODEL
+                            </label>
+<input class="bg-surface-container-low border border-outline-variant rounded-lg p-md text-body-sm focus:ring-2 focus:ring-secondary/50 outline-none transition-all" type="text" value="o1-preview"/>
+</div>
+</div>
+<div class="flex flex-col gap-md">
+<label class="font-label-mono text-[11px] text-outline-variant">SENSITIVE KEYWORDS</label>
+<div class="bg-surface-container-low border border-outline-variant rounded-lg p-sm flex flex-wrap gap-sm min-h-[100px]">
+<div class="flex items-center gap-xs px-md py-1 bg-error/10 border border-error/30 text-error rounded-full text-body-sm">
+<span>PII_REDACT</span>
+<button class="material-symbols-outlined text-[14px]">close</button>
+</div>
+<div class="flex items-center gap-xs px-md py-1 bg-error/10 border border-error/30 text-error rounded-full text-body-sm">
+<span>INTERNAL_ONLY</span>
+<button class="material-symbols-outlined text-[14px]">close</button>
+</div>
+<div class="flex items-center gap-xs px-md py-1 bg-error/10 border border-error/30 text-error rounded-full text-body-sm">
+<span>CREDIT_CARD</span>
+<button class="material-symbols-outlined text-[14px]">close</button>
+</div>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm flex-1 min-w-[120px]" placeholder="Add keyword..." type="text"/>
+</div>
+<p class="text-[11px] text-outline italic">Triggers Tier 3 routing and sanitization layers automatically.</p>
+</div>
+</div>
+</section>
+<!-- Budget Config -->
+<section class="col-span-12 lg:col-span-4">
+<div class="glass-card rounded-xl p-lg flex flex-col gap-lg h-full border-secondary/20">
+<div class="flex items-center gap-md border-b border-white/5 pb-md">
+<span class="material-symbols-outlined text-secondary text-[32px]" style="font-variation-settings: 'FILL' 1;">payments</span>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Budget Config</h3>
+<p class="text-body-sm text-outline">Fiscal guardrails</p>
+</div>
+</div>
+<div class="space-y-md">
+<div class="flex flex-col gap-sm">
+<label class="font-label-mono text-[11px] text-outline-variant">MONTHLY HARD LIMIT ($)</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 text-outline">$</span>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg py-md pl-8 pr-md text-body-md font-bold focus:ring-2 focus:ring-secondary/50 outline-none" type="number" value="2500"/>
+</div>
+</div>
+<div class="space-y-sm pt-md border-t border-white/5">
+<div class="flex items-center justify-between p-sm">
+<span class="text-body-sm">50% Usage Alert</span>
+<div class="relative inline-block w-10 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-outline-variant appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10 checked:translate-x-full checked:border-primary" id="toggle50" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200" for="toggle50"></label>
+</div>
+</div>
+<div class="flex items-center justify-between p-sm">
+<span class="text-body-sm">80% Usage Alert</span>
+<div class="relative inline-block w-10 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-outline-variant appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10 checked:translate-x-full checked:border-primary" id="toggle80" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200" for="toggle80"></label>
+</div>
+</div>
+<div class="flex items-center justify-between p-sm">
+<span class="text-body-sm">Hard Stop at 100%</span>
+<div class="relative inline-block w-10 align-middle select-none">
+<input class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-outline-variant appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10 checked:translate-x-full checked:border-primary" id="toggleStop" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200" for="toggleStop"></label>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Memory Config -->
+<section class="col-span-12 lg:col-span-6">
+<div class="glass-card rounded-xl p-lg flex flex-col gap-lg border-primary/20">
+<div class="flex items-center gap-md border-b border-white/5 pb-md">
+<span class="material-symbols-outlined text-primary text-[32px]" style="font-variation-settings: 'FILL' 1;">neurology</span>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface">Memory Config</h3>
+<p class="text-body-sm text-outline">Neural persistence &amp; recall parameters</p>
+</div>
+</div>
+<div class="flex items-center justify-between bg-surface-container-low p-md rounded-lg border border-white/5">
+<div class="flex flex-col">
+<span class="text-body-md font-semibold">Auto-Save Context</span>
+<span class="text-body-sm text-outline">Persist every 10 messages automatically</span>
+</div>
+<div class="relative inline-block w-12 h-6 align-middle select-none">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-2 border-outline-variant appearance-none cursor-pointer transition-transform duration-200 ease-in-out z-10 checked:translate-x-full checked:border-primary" id="autoSave" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200" for="autoSave"></label>
+</div>
+</div>
+<div class="space-y-lg pt-md">
+<div class="flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<label class="font-label-mono text-[11px] text-outline-variant uppercase">Recall Match Threshold</label>
+<span class="font-label-mono text-primary" id="matchVal">0.82</span>
+</div>
+<input id="matchSlider" class="w-full accent-primary" max="1" min="0" step="0.01" type="range" value="0.82"/>
+<div class="flex justify-between text-[10px] text-outline uppercase font-medium">
+<span>Broad (Fuzzy)</span>
+<span>Strict (Exact)</span>
+</div>
+</div>
+<div class="flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<label class="font-label-mono text-[11px] text-outline-variant uppercase">Vector Decay Rate</label>
+<span class="font-label-mono text-primary" id="decayVal">12%</span>
+</div>
+<input id="decaySlider" class="w-full accent-primary" max="100" min="0" step="1" type="range" value="12"/>
+<p class="text-[11px] text-outline italic">Controls how quickly historical data relevance diminishes.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Danger Zone -->
+<section class="col-span-12 lg:col-span-6">
+<div class="glass-card rounded-xl p-lg flex flex-col gap-lg border-error/20 bg-error/5 h-full">
+<div class="flex items-center gap-md border-b border-error/10 pb-md">
+<span class="material-symbols-outlined text-error text-[32px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<h3 class="font-headline-lg-mobile text-headline-lg-mobile text-error">Danger Zone</h3>
+<p class="text-body-sm text-outline">Irreversible destructive actions</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-md">
+<div class="flex items-center justify-between p-md bg-black/20 rounded-lg border border-error/10">
+<div>
+<p class="text-body-md font-semibold text-on-surface">Export Neural Memory</p>
+<p class="text-body-sm text-outline">Download a JSON copy of all saved context.</p>
+</div>
+<button onclick="window.open('/api/memory', '_blank')" class="px-lg py-2 border border-outline-variant hover:bg-white/5 rounded-lg text-body-sm transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                                Export
+                            </button>
+</div>
+<div class="flex items-center justify-between p-md bg-black/20 rounded-lg border border-error/10">
+<div>
+<p class="text-body-md font-semibold text-on-surface">Purge All Vectors</p>
+<p class="text-body-sm text-outline">Delete all operational history permanently.</p>
+</div>
+<button onclick="if(confirm('Are you sure you want to purge all memory vectors? This cannot be undone.')) { fetch('/api/memory', {method: 'DELETE'}).then(res => res.json()).then(data => { if(data.success) alert('All memory vectors purged successfully.'); else alert('Failed to purge memory.'); window.location.reload(); }); }" class="px-lg py-2 bg-error/10 text-error border border-error/30 hover:bg-error/20 rounded-lg text-body-sm font-semibold transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">delete_forever</span>
+                                Purge
+                            </button>
+</div>
+</div>
+<div class="mt-auto pt-md flex items-start gap-md text-error/60">
+<span class="material-symbols-outlined text-[20px]">info</span>
+<p class="text-[11px] font-medium uppercase tracking-tight">Warning: Purging vectors will reset all learned system behaviors. This cannot be undone.</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Sticky Actions -->
+<div class="fixed bottom-lg right-lg flex gap-md z-50">
+<button class="px-xl py-3 bg-surface-container-high border border-outline-variant rounded-xl text-body-sm font-medium hover:bg-surface-variant transition-all backdrop-blur-xl">
+                Reset Changes
+            </button>
+<button class="px-xl py-3 btn-3d rounded-xl text-on-primary text-body-sm font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">save</span>
+                Commit Settings
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+
+<script>
+        // Simple Interaction logic
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('glow-active');
+            });
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('glow-active');
+            });
+        });
+
+        // Toggle micro-interaction
+        document.querySelectorAll('.toggle-checkbox').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const parent = this.closest('.bg-surface-container-low');
+                if (parent) {
+                    if(this.checked) {
+                        parent.classList.add('border-primary/30');
+                    } else {
+                        parent.classList.remove('border-primary/30');
+                    }
+                }
+            });
+        });
+    </script>
+<script>
+window.addEventListener('load', async () => {
+    try {
+        const res = await fetch('/api/settings');
+        const settings = await res.json();
+        
+        const bindToggle = (id, key) => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (settings[key] !== undefined) el.checked = settings[key];
+                el.addEventListener('change', () => fetch('/api/settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({[key]: el.checked}) }));
+            }
+        };
+        const bindSlider = (id, key, valId, suffix='') => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (settings[key] !== undefined) {
+                    el.value = settings[key];
+                    document.getElementById(valId).innerText = settings[key] + suffix;
+                }
+                el.addEventListener('change', () => fetch('/api/settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({[key]: parseFloat(el.value)}) }));
+                el.addEventListener('input', () => document.getElementById(valId).innerText = el.value + suffix);
+            }
+        };
+
+        bindToggle('toggle50', 'alert50');
+        bindToggle('toggle80', 'alert80');
+        bindToggle('toggleStop', 'hardStop');
+        bindToggle('autoSave', 'autoSave');
+        bindSlider('matchSlider', 'matchThreshold', 'matchVal');
+        bindSlider('decaySlider', 'decayRate', 'decayVal', '%');
+
+    } catch(e) {
+        console.error('Failed to load settings', e);
+    }
+});
+</script>
+</body></html>

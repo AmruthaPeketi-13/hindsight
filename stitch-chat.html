@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hindsight AI Ops Manager | Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&amp;family=Geist:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #010f1f;
+            color: #e2e8f0;
+            overflow: hidden;
+            font-family: 'Geist', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(13, 28, 45, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px dotted rgba(0, 255, 133, 0.3);
+        }
+        .glass-card-active {
+            border: 1px dotted #00ff85;
+            box-shadow: 0 0 15px rgba(0, 255, 133, 0.1);
+        }
+        .dotted-border {
+            border: 1px dotted rgba(0, 255, 133, 0.3);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 20px rgba(0, 255, 133, 0.15);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 255, 133, 0.2);
+            border-radius: 10px;
+        }
+        .ai-gradient-text {
+            background: linear-gradient(90deg, #00ff85, #00d1ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#00ff85",
+                        "on-primary": "#00391c",
+                        "primary-container": "#00522b",
+                        "on-primary-container": "#9efbc0",
+                        "secondary": "#00d1ff",
+                        "on-secondary": "#003544",
+                        "secondary-container": "#004d61",
+                        "on-secondary-container": "#bee9ff",
+                        "tertiary": "#ffb4ab",
+                        "on-tertiary": "#690005",
+                        "tertiary-container": "#93000a",
+                        "on-tertiary-container": "#ffdad6",
+                        "background": "#010f1f",
+                        "on-background": "#e2e8f0",
+                        "surface": "#051424",
+                        "on-surface": "#e2e8f0",
+                        "surface-variant": "#2c3a4c",
+                        "on-surface-variant": "#c0cbd6",
+                        "outline": "#8a929b",
+                        "outline-variant": "#444d58",
+                        "surface-container-lowest": "#010f1f",
+                        "surface-container-low": "#0d1c2d",
+                        "surface-container": "#112133",
+                        "surface-container-high": "#1b2b3d",
+                        "surface-container-highest": "#253547",
+                        "surface-bright": "#2c3a4c",
+                        "surface-dim": "#051424"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0px",
+                        "lg": "2px",
+                        "xl": "4px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "container-max": "1440px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "xs": "4px",
+                        "xl": "40px",
+                        "base": "4px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Geist"],
+                        "headline-xl": ["Geist"],
+                        "headline-lg-mobile": ["Geist"],
+                        "headline-lg": ["Geist"],
+                        "label-mono": ["JetBrains Mono"],
+                        "body-sm": ["Geist"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "label-mono": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="flex h-screen bg-surface-container-lowest overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-md z-40 bg-surface-container-low/80 backdrop-blur-2xl m-lg h-[calc(100vh-48px)] w-64 dotted-border shadow-2xl">
+<div class="flex items-center gap-md mb-xl px-sm">
+<div class="w-10 h-10 bg-primary-container flex items-center justify-center shadow-lg shadow-primary/20 dotted-border">
+<span class="material-symbols-outlined text-primary">terminal</span>
+</div>
+<div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary leading-none">Hindsight</h1>
+<p class="font-label-mono text-label-mono text-outline opacity-70">Ops Console</p>
+</div>
+</div>
+<nav class="flex-1 space-y-sm">
+<a class="flex items-center gap-md px-md py-sm text-primary bg-primary/10 dotted-border font-label-mono text-label-mono transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="chat">terminal</span>
+            Console
+        </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface font-label-mono text-label-mono transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="database">storage</span>
+            Vault
+        </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface font-label-mono text-label-mono transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="monitoring">query_stats</span>
+            Telemetry
+        </a>
+<a class="flex items-center gap-md px-md py-sm text-outline hover:bg-white/5 hover:text-on-surface font-label-mono text-label-mono transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings_input_component</span>
+            Config
+        </a>
+</nav>
+<div class="mt-auto space-y-sm">
+<div class="p-sm bg-surface-container-high/40 dotted-border mb-md">
+<p class="font-label-mono text-[10px] text-outline uppercase tracking-widest mb-xs">Engine Status</p>
+<div class="flex items-center justify-between">
+<span class="font-label-mono text-label-mono text-secondary">CORE_v.4o</span>
+<span class="w-2 h-2 bg-secondary animate-pulse"></span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-xs">
+<button class="p-sm hover:bg-white/5 dotted-border flex flex-col items-center justify-center text-outline transition-colors">
+<span class="material-symbols-outlined" data-icon="support_agent">help_center</span>
+<span class="text-[10px] font-label-mono mt-xs">Help</span>
+</button>
+<button class="p-sm hover:bg-white/5 dotted-border flex flex-col items-center justify-center text-outline transition-colors">
+<span class="material-symbols-outlined" data-icon="groups">hub</span>
+<span class="text-[10px] font-label-mono mt-xs">Nodes</span>
+</button>
+</div>
+<button class="w-full mt-sm py-sm bg-primary text-on-primary font-label-mono text-label-mono active:scale-95 transition-transform">
+            New Session
+        </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex ml-72 mr-[320px] relative z-10">
+<div class="flex-1 flex flex-col h-screen relative">
+<!-- Chat Scroll Area -->
+<div class="flex-1 overflow-y-auto custom-scrollbar pt-xl pb-32 px-xl">
+<!-- Welcome State -->
+<div class="flex flex-col items-center justify-center min-h-[614px] text-center mb-xl" id="welcome-state">
+<div class="w-24 h-24 mb-lg bg-surface-container flex items-center justify-center dotted-border glow-emerald animate-float">
+<span class="material-symbols-outlined text-primary text-5xl" style="font-variation-settings: 'FILL' 1;">developer_board</span>
+</div>
+<h2 class="font-headline-xl text-headline-xl mb-sm ai-gradient-text">System Ready.</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mb-xl">Architecture Assistant initialized. Found 12 incidents and 45 data shards in recent logs.</p>
+<div class="flex flex-wrap justify-center gap-md max-w-2xl">
+<button class="glass-card px-lg py-sm flex items-center gap-sm hover:border-primary transition-all text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="bolt">offline_bolt</span>
+                        Review Incident Logs
+                    </button>
+<button class="glass-card px-lg py-sm flex items-center gap-sm hover:border-primary transition-all text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-primary" data-icon="summarize">description</span>
+                        Fetch Memory Dump
+                    </button>
+<button class="glass-card px-lg py-sm flex items-center gap-sm hover:border-primary transition-all text-body-sm font-body-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="search_insights">troubleshoot</span>
+                        Latency Trace
+                    </button>
+</div>
+</div>
+<!-- Chat History -->
+<div class="space-y-xl max-w-4xl mx-auto hidden" id="chat-messages">
+<!-- User Message -->
+<div class="flex items-start gap-md flex-row-reverse">
+<div class="w-10 h-10 bg-surface-container-high dotted-border flex items-center justify-center font-label-mono text-primary">ID_01</div>
+<div class="glass-card glass-card-active p-md max-w-[80%]">
+<p class="font-body-md text-body-md text-on-surface">Can you pull up the details on the server outage from last night? I think it was related to the HR database migration.</p>
+</div>
+</div>
+<!-- AI Message -->
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 bg-primary-container dotted-border flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">memory</span>
+</div>
+<div class="flex-1 space-y-md max-w-[85%]">
+<div class="glass-card p-lg space-y-md">
+<!-- Meta Badges -->
+<div class="flex flex-wrap gap-xs mb-sm">
+<span class="px-sm py-1 dotted-border bg-secondary/10 text-secondary text-[10px] font-label-mono uppercase tracking-tighter">CORE_4o</span>
+<span class="px-sm py-1 dotted-border bg-tertiary/10 text-tertiary text-[10px] font-label-mono uppercase tracking-tighter">SEC_LEVEL_2</span>
+<span class="px-sm py-1 dotted-border bg-primary/10 text-primary text-[10px] font-label-mono uppercase tracking-tighter">COMPLEX_MID</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                                Executing trace on system logs... correlation found. Migration Task #992 caused a dead-lock on the primary node at 02:14:12 UTC.
+                            </p>
+<!-- Memory Match Card (Updated without image) -->
+<div class="bg-surface-container-lowest/50 dotted-border p-md">
+<div class="flex items-center justify-between mb-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary text-sm">history_edu</span>
+<span class="text-[11px] font-label-mono uppercase text-outline">Shard Retrieved</span>
+</div>
+<div class="text-[11px] font-label-mono text-secondary px-sm py-0.5 dotted-border bg-secondary/10">MATCH_94%</div>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-12 h-12 bg-surface-container-highest dotted-border flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-outline">person_search</span>
+</div>
+<div class="flex-1 min-w-0">
+<h4 class="font-body-md text-body-sm font-semibold truncate text-primary">Lead_Architect_Sarah</h4>
+<p class="font-body-sm text-body-sm text-outline-variant truncate">DB Migration Log - Entry #2293</p>
+</div>
+</div>
+<div class="mt-sm pt-sm border-t border-white/5 text-[13px] text-on-surface-variant italic font-label-mono">
+                                    "Detected staging latency prior to deployment. Recommended staggered update."
+                                </div>
+</div>
+</div>
+<div class="flex items-center gap-md px-sm">
+<button class="text-outline hover:text-primary transition-colors flex items-center gap-xs font-label-mono text-[10px]">
+<span class="material-symbols-outlined text-sm">thumb_up</span> VAL
+                            </button>
+<button class="text-outline hover:text-tertiary transition-colors flex items-center gap-xs font-label-mono text-[10px]">
+<span class="material-symbols-outlined text-sm">thumb_down</span> ERR
+                            </button>
+<button class="text-outline hover:text-secondary transition-colors flex items-center gap-xs font-label-mono text-[10px] ml-auto">
+<span class="material-symbols-outlined text-sm">download</span> EXPORT_RAW
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Bar -->
+<div class="absolute bottom-lg left-1/2 -translate-x-1/2 w-full max-w-4xl px-lg">
+<div class="glass-card p-sm flex items-center gap-sm shadow-2xl focus-within:border-primary transition-all">
+<button class="w-10 h-10 dotted-border flex items-center justify-center text-outline hover:text-primary hover:bg-white/5 transition-all">
+<span class="material-symbols-outlined">add</span>
+</button>
+<input class="flex-1 bg-transparent border-none focus:ring-0 text-body-md font-body-md text-on-surface placeholder:text-outline/50" id="chat-input" placeholder="Execute command or query..." type="text"/>
+<div class="flex items-center gap-sm">
+<span class="hidden md:block font-label-mono text-[10px] text-outline/40 mr-sm">CMD + ENT</span>
+<button class="w-10 h-10 bg-primary text-on-primary flex items-center justify-center active:scale-90 transition-transform shadow-lg shadow-primary/20" onclick="sendMessage()">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Stats & Memory Sidebar -->
+<aside class="fixed right-0 top-0 h-full w-[320px] bg-surface-container-low/60 backdrop-blur-xl border-l border-white/5 p-lg z-40 overflow-y-auto custom-scrollbar">
+<h3 class="font-label-mono text-label-mono text-outline uppercase tracking-widest mb-lg flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-sm">monitoring</span>
+        Real-time Metrics
+    </h3>
+<div class="space-y-lg">
+<div class="glass-card p-md">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-body-sm text-body-sm font-semibold">Allocated Memory</span>
+<span class="font-label-mono text-[11px] text-secondary">64.2 MB</span>
+</div>
+<div class="w-full bg-white/5 h-1.5 overflow-hidden dotted-border">
+<div class="bg-primary h-full" style="width: 65%;"></div>
+</div>
+<p class="mt-xs text-[10px] text-outline font-body-sm">65% of total shard capacity</p>
+</div>
+<div class="space-y-md">
+<h4 class="text-[11px] font-label-mono text-outline-variant uppercase">Instance health</h4>
+<div class="flex items-center gap-md p-sm hover:bg-white/5 transition-colors dotted-border mb-2">
+<div class="w-8 h-8 bg-primary/10 flex items-center justify-center dotted-border">
+<span class="material-symbols-outlined text-primary text-sm">dns</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="text-xs font-semibold">Node_Alpha</span>
+<span class="text-[10px] text-primary font-label-mono">ONLINE</span>
+</div>
+<div class="text-[10px] text-outline">99.9% availability</div>
+</div>
+</div>
+<div class="flex items-center gap-md p-sm hover:bg-white/5 transition-colors dotted-border">
+<div class="w-8 h-8 bg-tertiary/10 flex items-center justify-center dotted-border">
+<span class="material-symbols-outlined text-tertiary text-sm">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between">
+<span class="text-xs font-semibold">Node_DB_HR</span>
+<span class="text-[10px] text-tertiary font-label-mono">DEGRADED</span>
+</div>
+<div class="text-[10px] text-outline">Latency Spike Detected</div>
+</div>
+</div>
+</div>
+<div class="space-y-md">
+<h4 class="text-[11px] font-label-mono text-outline-variant uppercase">Data Fragments</h4>
+<div class="space-y-sm">
+<div class="p-sm bg-white/5 dotted-border hover:border-primary transition-all cursor-pointer group">
+<div class="flex items-center gap-xs mb-xs">
+<span class="material-symbols-outlined text-[12px] text-primary">label</span>
+<span class="text-[10px] font-label-mono text-outline">REPORT_ID_112</span>
+</div>
+<p class="text-[12px] text-on-surface line-clamp-2">"Transaction lock timeout at payroll migration stage..."</p>
+</div>
+<div class="p-sm bg-white/5 dotted-border hover:border-primary transition-all cursor-pointer group">
+<div class="flex items-center gap-xs mb-xs">
+<span class="material-symbols-outlined text-[12px] text-secondary">security</span>
+<span class="text-[10px] font-label-mono text-outline">SEC_POLICY_88</span>
+</div>
+<p class="text-[12px] text-on-surface line-clamp-2">"Updated firewall rules for administrative console..."</p>
+</div>
+</div>
+<button class="w-full py-2 dotted-border text-[11px] font-label-mono text-outline hover:bg-white/5 transition-all">
+                ARCHIVE_BROWSER
+            </button>
+</div>
+<div class="h-40 glass-card overflow-hidden relative group">
+<div class="absolute inset-0 flex items-center justify-center text-outline/20 group-hover:text-primary/30 transition-colors">
+<span class="material-symbols-outlined text-6xl">grid_view</span>
+</div>
+<div class="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-primary/5 to-transparent"></div>
+<div class="absolute top-2 left-2 flex items-center gap-1">
+<div class="w-1 h-1 bg-primary animate-ping"></div>
+<span class="text-[10px] font-label-mono text-primary uppercase">Packet_Flow</span>
+</div>
+</div>
+</div>
+</aside>
+<script>
+    function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const welcome = document.getElementById('welcome-state');
+        const messages = document.getElementById('chat-messages');
+        
+        if (input.value.trim() !== '') {
+            welcome.classList.add('hidden');
+            messages.classList.remove('hidden');
+            input.value = '';
+            
+            const container = messages.parentElement;
+            setTimeout(() => {
+                container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+            }, 100);
+        }
+    }
+
+    document.getElementById('chat-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    document.querySelectorAll('#welcome-state button').forEach(button => {
+        button.addEventListener('click', () => {
+            const text = button.innerText.trim();
+            document.getElementById('chat-input').value = text;
+            sendMessage();
+        });
+    });
+</script>
+</body></html>
