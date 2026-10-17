@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -84,7 +84,7 @@ export default function Login() {
       } else {
         setErrorMsg(data.error || 'Authentication failed');
       }
-    } catch (err) {
+    } catch {
       setErrorMsg('Network error. Is the server running?');
     }
     setLoading(false);

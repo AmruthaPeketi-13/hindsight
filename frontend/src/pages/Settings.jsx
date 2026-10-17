@@ -1,14 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [savedNotice, setSavedNotice] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    instanceName: '',
+    adminEmail: '',
+    primaryModel: 'Gemini 2.5 Flash (Recommended)',
+    streamMode: true,
+    memoryRetrieval: true,
+  });
 
-  const handleSave = () => {
-    setSavedNotice(true);
-    setTimeout(() => setSavedNotice(false), 3000);
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const res = await fetch('/api/settings', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('hindsight_token')}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setForm(prev => ({ ...prev, ...data }));
+        }
+      } catch { /* settings load is non-critical */ }
+    };
+    loadSettings();
+  }, []);
+
+  const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('hindsight_token')}`
+        },
+        body: JSON.stringify(form)
+      });
+      if (!res.ok) throw new Error('Save failed');
+      setSavedNotice(true);
+      setTimeout(() => setSavedNotice(false), 3000);
+    } catch {
+      alert('Failed to save configuration.');
+    }
+    setSaving(false);
   };
 
   return (
@@ -79,11 +119,11 @@ export default function Settings() {
                   <div className="space-y-lg">
                     <div>
                       <label className="block font-label-mono text-[11px] text-outline uppercase tracking-widest mb-sm">Instance Name</label>
-                      <input type="text" className="w-full bg-surface-container/50 border border-white/10 rounded-lg py-sm px-md text-on-surface focus:border-primary outline-none transition-all max-w-md" defaultValue="Hindsight Production Node 01" />
+                      <input type="text" value={form.instanceName} onChange={(e) => update('instanceName', e.target.value)} className="w-full bg-surface-container/50 border border-white/10 rounded-lg py-sm px-md text-on-surface focus:border-primary outline-none transition-all max-w-md" placeholder="Hindsight Production Node 01" />
                     </div>
                     <div>
                       <label className="block font-label-mono text-[11px] text-outline uppercase tracking-widest mb-sm">Admin Email</label>
-                      <input type="email" className="w-full bg-surface-container/50 border border-white/10 rounded-lg py-sm px-md text-on-surface focus:border-primary outline-none transition-all max-w-md" defaultValue="admin@company.com" />
+                      <input type="email" value={form.adminEmail} onChange={(e) => update('adminEmail', e.target.value)} className="w-full bg-surface-container/50 border border-white/10 rounded-lg py-sm px-md text-on-surface focus:border-primary outline-none transition-all max-w-md" placeholder="admin@company.com" />
                     </div>
                   </div>
                 </div>
@@ -96,17 +136,17 @@ export default function Settings() {
                   <div className="space-y-lg">
                     <div>
                       <label className="block font-label-mono text-[11px] text-outline uppercase tracking-widest mb-sm">Primary Model</label>
-                      <select className="w-full bg-surface-container/50 border border-white/10 rounded-lg py-sm px-md text-on-surface focus:border-primary outline-none transition-all max-w-md appearance-none">
+                      <select value={form.primaryModel} onChange={(e) => update('primaryModel', e.target.value)} className="w-full bg-surface-container/50 border border-white/10 rounded-lg py-sm px-md text-on-surface focus:border-primary outline-none transition-all max-w-md appearance-none">
                         <option>Gemini 2.5 Flash (Recommended)</option>
                         <option>Gemini 2.5 Pro</option>
                       </select>
                     </div>
                     <div className="flex items-center gap-md">
-                      <input type="checkbox" id="stream_mode" defaultChecked className="w-4 h-4 rounded border-white/10 bg-surface-container text-primary focus:ring-primary focus:ring-offset-surface cursor-pointer" />
+                      <input type="checkbox" id="stream_mode" checked={form.streamMode} onChange={(e) => update('streamMode', e.target.checked)} className="w-4 h-4 rounded border-white/10 bg-surface-container text-primary focus:ring-primary focus:ring-offset-surface cursor-pointer" />
                       <label htmlFor="stream_mode" className="text-body-sm text-on-surface cursor-pointer">Enable streaming responses in Chat Console</label>
                     </div>
                     <div className="flex items-center gap-md">
-                      <input type="checkbox" id="memory_retrieval" defaultChecked className="w-4 h-4 rounded border-white/10 bg-surface-container text-primary focus:ring-primary focus:ring-offset-surface cursor-pointer" />
+                      <input type="checkbox" id="memory_retrieval" checked={form.memoryRetrieval} onChange={(e) => update('memoryRetrieval', e.target.checked)} className="w-4 h-4 rounded border-white/10 bg-surface-container text-primary focus:ring-primary focus:ring-offset-surface cursor-pointer" />
                       <label htmlFor="memory_retrieval" className="text-body-sm text-on-surface cursor-pointer">Auto-retrieve from Memory Vault during inference</label>
                     </div>
                   </div>
@@ -146,7 +186,7 @@ export default function Settings() {
 
               <div className="flex justify-end gap-md">
                 <button onClick={() => setSavedNotice(false)} className="px-lg py-sm rounded-lg font-label-mono text-outline hover:text-on-surface transition-colors cursor-pointer">Cancel</button>
-                <button onClick={handleSave} className="btn-3d px-lg py-sm rounded-lg font-label-mono text-on-primary shadow-lg cursor-pointer active:scale-95">Save Configuration</button>
+                <button onClick={handleSave} disabled={saving} className="btn-3d px-lg py-sm rounded-lg font-label-mono text-on-primary shadow-lg cursor-pointer active:scale-95 disabled:opacity-50">{saving ? 'Saving...' : 'Save Configuration'}</button>
               </div>
             </div>
           </div>

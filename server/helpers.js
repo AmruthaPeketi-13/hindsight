@@ -11,9 +11,9 @@ function detectCategory(msg) {
 }
 
 function detectSeverity(msg) {
-  if (/urgent|critical|down|outage|production|blocked|cannot|crash|emergency|immediately|asap/i.test(msg)) return 'high';
-  if (/issue|problem|not working|error|fail|broken|stuck|slow|delay/i.test(msg)) return 'medium';
-  return 'low';
+  if (/urgent|critical|down|outage|production|blocked|cannot|crash|emergency|immediately|asap/i.test(msg)) return 'HIGH';
+  if (/issue|problem|not working|error|fail|broken|stuck|slow|delay/i.test(msg)) return 'MED';
+  return 'LOW';
 }
 
 function extractTags(msg) {

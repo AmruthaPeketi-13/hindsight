@@ -6,6 +6,7 @@ export default function Analytics() {
     totalQueries: 0, 
     sessionSpend: 0, 
     budgetPct: 0, 
+    avgLatencyMs: null,
     logs: [] 
   });
 
@@ -28,7 +29,8 @@ export default function Analytics() {
             totalQueries: statsData.totalQueries || statsData.total || 0,
             sessionSpend: statsData.session?.spend || 0,
             budgetPct: statsData.session?.budgetPct || 0,
-            logs: analyticsData.logs || []
+            avgLatencyMs: analyticsData.summary?.avgLatencyMs ?? null,
+            logs: analyticsData.recentLogs || []
           });
         }
       } catch (err) {
@@ -130,7 +132,7 @@ export default function Analytics() {
                 <span className="text-outline font-label-mono text-[10px] bg-white/5 px-sm py-1 rounded-full border border-white/10">Stable</span>
               </div>
               <p className="text-on-surface-variant font-label-mono text-label-mono uppercase tracking-widest">Avg Latency</p>
-              <h3 className="text-headline-lg font-headline-lg mt-xs">~120ms</h3>
+              <h3 className="text-headline-lg font-headline-lg mt-xs">{stats.avgLatencyMs != null ? `~${stats.avgLatencyMs}ms` : '—'}</h3>
             </div>
           </div>
 

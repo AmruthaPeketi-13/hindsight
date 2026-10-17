@@ -152,6 +152,13 @@ async function searchMemory(query) {
   return await sqlite.searchMemory(query);
 }
 
+function normalizeSeverity(sev) {
+  const s = (sev || 'low').toLowerCase();
+  if (s === 'high' || s === 'critical') return 'HIGH';
+  if (s === 'med' || s === 'medium') return 'MED';
+  return 'LOW';
+}
+
 async function saveMemory({ user, content, category, severity, resolution, tags }) {
   if (await checkPrisma()) {
     try {
@@ -171,7 +178,7 @@ async function saveMemory({ user, content, category, severity, resolution, tags 
       const id = Date.now().toString() + Math.floor(Math.random()*1000);
       const now = new Date().toISOString();
       const safeCategory = category || 'General';
-      const safeSeverity = severity || 'LOW';
+      const safeSeverity = normalizeSeverity(severity);
       const safeUser = user || 'System';
       const safeContent = content || '';
       const safeResolution = resolution || '';
@@ -194,9 +201,10 @@ async function saveMemory({ user, content, category, severity, resolution, tags 
 async function loadMemory() {
   if (await checkPrisma()) {
     try {
-      return await prisma.memory.findMany({
+      const rows = await prisma.memory.findMany({
         orderBy: { date: 'desc' }
       });
+      return rows.map(m => ({ ...m, severity: normalizeSeverity(m.severity) }));
     } catch(e) {
       prismaAvailable = false;
     }
@@ -210,18 +218,64 @@ async function deleteMemory(id) {
       await prisma.memory.delete({ where: { id } });
       return true;
     } catch(e) {
+      if (e.code === 'P2025') return false;
       prismaAvailable = false;
     }
   }
   return sqlite.deleteMemory(id);
 }
 
-function getStats() {
+async function deleteAllMemories() {
+  let remaining = 0;
+  if (await checkPrisma()) {
+    try {
+      await prisma.memory.deleteMany({});
+    } catch(e) {
+      prismaAvailable = false;
+    }
+  }
+  sqlite.deleteAllMemories();
+  if (await checkPrisma()) {
+    try {
+      remaining = await prisma.memory.count();
+    } catch(e) { remaining = 0; }
+  }
+  return remaining;
+}
+
+function computeStats(all) {
+  const cats = {};
+  let recs = 0;
+  all.forEach(m => {
+    const cat = m.category || 'General';
+    cats[cat] = (cats[cat] || 0) + 1;
+    if (m.recurrenceCount > 1) recs++;
+  });
+  return {
+    total: all.length,
+    totalQueries: all.length,
+    activeHits: `${all.length > 0 ? (all.length * 1.5).toFixed(1) : 0}k`,
+    orphaned: 0,
+    recurrent: recs,
+    byCategory: cats,
+    recurrentIssues: recs,
+    topRecurrent: all.filter(m => m.recurrenceCount > 1).sort((a,b) => b.recurrenceCount - a.recurrenceCount).slice(0,5)
+  };
+}
+
+async function getStats() {
+  if (await checkPrisma()) {
+    try {
+      return computeStats(await prisma.memory.findMany());
+    } catch(e) {
+      prismaAvailable = false;
+    }
+  }
   return sqlite.getStats();
 }
 
 module.exports = {
-  searchMemory, saveMemory, loadMemory, deleteMemory,
+  searchMemory, saveMemory, loadMemory, deleteMemory, deleteAllMemories,
   getStats, getSettings, saveSetting,
   registerUser, loginUser, verifyToken, prisma
 };

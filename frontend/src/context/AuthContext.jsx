@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useEffect } from 'react';
-
-const AuthContext = createContext(null);
+import { useState, useEffect } from 'react';
+import { AuthContext } from './auth';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,11 +12,12 @@ export const AuthProvider = ({ children }) => {
       if (token && username) {
         // Verify token is still valid against the server
         try {
-          const response = await fetch('/api/health', {
+          const response = await fetch('/api/auth/me', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (response.ok) {
-            setUser({ username, token });
+            const data = await response.json();
+            setUser({ username: data.username || username, token });
           } else {
             localStorage.removeItem('hindsight_token');
             localStorage.removeItem('hindsight_username');
@@ -52,5 +52,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);

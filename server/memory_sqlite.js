@@ -97,6 +97,17 @@ function cosineSimilarity(vecA, vecB) {
   return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+function normalizeSeverity(sev) {
+  const s = (sev || 'low').toLowerCase();
+  if (s === 'high' || s === 'critical') return 'HIGH';
+  if (s === 'med' || s === 'medium') return 'MED';
+  return 'LOW';
+}
+
+function significantWords(text) {
+  return (text.toLowerCase().match(/\b[a-z]{4,}\b/g) || []);
+}
+
 function getSettings() {
   const stmt = db.prepare('SELECT * FROM settings');
   const rows = stmt.all();
@@ -155,15 +166,20 @@ async function searchMemory(query) {
 }
 
 async function saveMemory(entry) {
-  // Check for recurrence using basic string matching on the first word for speed
+  const normalizedSeverity = normalizeSeverity(entry.severity);
   const recentStmt = db.prepare(`SELECT * FROM memories WHERE category = ? ORDER BY date DESC LIMIT 5`);
   const recents = recentStmt.all(entry.category || 'General');
   
   let isRecurrence = false;
   let recurredId = null;
-  
+
+  const newWords = significantWords(entry.content || '');
   for (const m of recents) {
-    if (m.user === entry.user && entry.content.includes(m.content.split(' ')[0])) {
+    if (m.user !== entry.user) continue;
+    const oldWords = significantWords(m.content || '');
+    if (oldWords.length === 0) continue;
+    const overlap = oldWords.filter(w => newWords.includes(w)).length;
+    if (overlap / oldWords.length >= 0.6) {
       isRecurrence = true;
       recurredId = m.id;
       break;
@@ -202,7 +218,7 @@ async function saveMemory(entry) {
       id,
       new Date().toISOString(),
       entry.category || 'General',
-      entry.severity || 'low',
+      normalizedSeverity,
       entry.user || 'Unknown',
       entry.content,
       entry.resolution || '',
@@ -218,6 +234,7 @@ function loadMemory() {
   const stmt = db.prepare(`SELECT * FROM memories ORDER BY date DESC`);
   return stmt.all().map(m => {
     try { m.tags = JSON.parse(m.tags); } catch(e) { m.tags = []; }
+    m.severity = normalizeSeverity(m.severity);
     return m;
   });
 }

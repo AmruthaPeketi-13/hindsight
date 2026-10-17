@@ -60,7 +60,7 @@ export default function Vault() {
       } else {
         alert("Failed to add memory.");
       }
-    } catch (e) {
+    } catch {
       alert("Network error.");
     }
   };

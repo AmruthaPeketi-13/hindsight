@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth';
 
 export default function Sidebar({ mobileOpen = false, setMobileOpen = () => {} }) {
   const location = useLocation();

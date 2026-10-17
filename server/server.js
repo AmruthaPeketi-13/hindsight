@@ -4,7 +4,7 @@ const cors     = require('cors');
 const path     = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const { searchMemory, saveMemory, loadMemory, getStats, registerUser, loginUser, verifyToken } = require('./memory_prisma');
+const { searchMemory, saveMemory, loadMemory, getStats, deleteMemory, deleteAllMemories, registerUser, loginUser, verifyToken } = require('./memory_prisma');
 const { classifyQuery, estimateCost }                    = require('./router');
 const { saveLog, getAnalytics }                          = require('./analytics');
 const { detectCategory, detectSeverity, extractTags }   = require('./helpers');
@@ -43,16 +43,24 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Middleware to protect routes
 async function requireAuth(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ error: "Unauthorized" });
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const token = authHeader.split(' ')[1];
+    const user = await verifyToken(token);
+    if (!user) return res.status(401).json({ error: "Invalid token" });
+    req.user = user;
+    next();
+  } catch (e) {
+    res.status(401).json({ error: "Unauthorized" });
   }
-  const token = authHeader.split(' ')[1];
-  const user = await verifyToken(token);
-  if (!user) return res.status(401).json({ error: "Invalid token" });
-  req.user = user;
-  next();
 }
+
+app.get('/api/auth/me', requireAuth, (req, res) => {
+  res.json({ id: req.user.id, username: req.user.username });
+});
 
 // ─── Session budget tracker ───────────────────────────────────────────────────
 let sessionSpend = 0;
@@ -126,12 +134,12 @@ app.post('/api/chat', requireAuth, async (req, res) => {
   
   if (!message?.trim()) return res.status(400).json({ error: 'Empty message.' });
 
-  const t0               = Date.now();
-  const relevantMemories = await searchMemory(message);
-  const routing          = classifyQuery(message, relevantMemories);
-  const systemPrompt     = buildSystemPrompt(relevantMemories, routing);
+  const t0 = Date.now();
 
   try {
+    const relevantMemories = await searchMemory(message);
+    const routing          = classifyQuery(message, relevantMemories);
+    const systemPrompt     = buildSystemPrompt(relevantMemories, routing);
     const { text: answer, promptTokens, completionTokens } =
       await callGemini(routing.id, systemPrompt, `${userName ? `[${userName}] ` : ''}${message}`);
 
@@ -194,23 +202,24 @@ app.post('/api/chat/stream', requireAuth, async (req, res) => {
 
   const send = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
 
-  const t0               = Date.now();
-  const relevantMemories = await searchMemory(message);
-  const routing          = classifyQuery(message, relevantMemories);
-  const systemPrompt     = buildSystemPrompt(relevantMemories, routing);
-
-  // Send routing + memory instantly — UI renders badges before AI starts typing
-  send('routing', { model: routing.id, label: routing.label, tier: routing.tier, color: routing.color, flag: routing.flag, reason: routing.reason });
-  send('memory_matches', {
-    used: relevantMemories.length > 0, count: relevantMemories.length,
-    matches: relevantMemories.map(m => ({
-      date: m.date, user: m.user, summary: m.content,
-      category: m.category, score: parseFloat((m._score*100).toFixed(1)),
-      recurrence: m.recurrenceCount,
-    })),
-  });
+  const t0 = Date.now();
 
   try {
+    const relevantMemories = await searchMemory(message);
+    const routing          = classifyQuery(message, relevantMemories);
+    const systemPrompt     = buildSystemPrompt(relevantMemories, routing);
+
+    // Send routing + memory instantly — UI renders badges before AI starts typing
+    send('routing', { model: routing.id, label: routing.label, tier: routing.tier, color: routing.color, flag: routing.flag, reason: routing.reason });
+    send('memory_matches', {
+      used: relevantMemories.length > 0, count: relevantMemories.length,
+      matches: relevantMemories.map(m => ({
+        date: m.date, user: m.user, summary: m.content,
+        category: m.category, score: parseFloat((m._score*100).toFixed(1)),
+        recurrence: m.recurrenceCount,
+      })),
+    });
+
     let fullAnswer = '';
     for await (const token of streamGemini(routing.id, systemPrompt, `${userName ? `[${userName}] ` : ''}${message}`)) {
       fullAnswer += token;
@@ -332,35 +341,37 @@ app.post('/api/webhooks/:source', async (req, res) => {
   }
 });
 
-app.delete('/api/memory', requireAuth, (req, res) => {
-  const { deleteAllMemories } = require('./memory_sqlite');
+app.delete('/api/memory', requireAuth, async (req, res) => {
   try {
-    deleteAllMemories();
-    res.json({ success: true, remaining: 0 });
+    const remaining = await deleteAllMemories();
+    res.json({ success: true, remaining });
   } catch(e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-app.delete('/api/memory/:id', async (req, res) => {
-  const { deleteMemory } = require('./memory_prisma');
-  const success = await deleteMemory(req.params.id);
-  res.json({ success });
+app.delete('/api/memory/:id', requireAuth, async (req, res) => {
+  try {
+    const success = await deleteMemory(req.params.id);
+    res.json({ success });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.get('/api/stats', (req, res) => {
+app.get('/api/stats', requireAuth, async (req, res) => {
   res.json({
-    ...getStats(),
+    ...(await getStats()),
     session: { spend: parseFloat(sessionSpend.toFixed(6)), budgetPct: parseFloat(((sessionSpend/SESSION_BUDGET)*100).toFixed(1)), budget: SESSION_BUDGET },
   });
 });
 
-app.get('/api/settings', async (req, res) => {
+app.get('/api/settings', requireAuth, async (req, res) => {
   const { getSettings } = require('./memory_prisma');
   res.json(await getSettings());
 });
 
-app.post('/api/settings', async (req, res) => {
+app.post('/api/settings', requireAuth, async (req, res) => {
   const { saveSetting } = require('./memory_prisma');
   for (const [key, value] of Object.entries(req.body)) {
     await saveSetting(key, value);

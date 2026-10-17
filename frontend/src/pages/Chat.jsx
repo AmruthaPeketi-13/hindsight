@@ -1,15 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
+import { useAuth } from '../context/auth';
 
 export default function Chat() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [memoryCount, setMemoryCount] = useState(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -18,6 +21,21 @@ export default function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/stats', {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('hindsight_token')}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setMemoryCount(data.total || 0);
+        }
+      } catch { /* stats are non-critical */ }
+    };
+    fetchStats();
+  }, []);
 
   const sendQuery = async (queryText) => {
     const trimmedMessage = (queryText || input).trim();
@@ -47,43 +65,66 @@ export default function Chat() {
         },
         body: JSON.stringify({ message: trimmedMessage })
       });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Request failed (${res.status})`);
+      }
+
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let currentText = '';
       let currentEvent = '';
+      let buffer = '';
+
+      const handleEvent = (event, dataStr) => {
+        if (!dataStr) return;
+        let d;
+        try { d = JSON.parse(dataStr); } catch { return; }
+
+        if (event === 'error') {
+          throw new Error(d.message || 'Stream error');
+        }
+
+        setMessages((prev) => 
+          prev.map((msg) => {
+            if (msg.id !== aiId) return msg;
+
+            const updatedMsg = { ...msg };
+
+            if (event === 'routing') {
+              updatedMsg.badges = [{ label: d.label, reason: d.reason }];
+            } else if (event === 'memory_matches' && d.used) {
+              updatedMsg.memory = d.matches[0];
+            } else if (event === 'token') {
+              currentText += d.token;
+              updatedMsg.content = currentText;
+            }
+            return updatedMsg;
+          })
+        );
+      };
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
-        const chunks = decoder.decode(value).split('\n');
-        
-        for (const line of chunks) {
-          if (line.startsWith('event: ')) {
-            currentEvent = line.replace('event: ', '').trim();
-          } else if (line.startsWith('data: ')) {
-            const dataStr = line.replace('data: ', '').trim();
-            if(!dataStr) continue;
-            
-            const d = JSON.parse(dataStr);
-            
-            setMessages((prev) => 
-              prev.map((msg) => {
-                if (msg.id !== aiId) return msg;
+        buffer += decoder.decode(value, { stream: true });
 
-                const updatedMsg = { ...msg };
+        // SSE events are separated by a blank line; keep the last partial chunk in the buffer
+        const parts = buffer.split('\n\n');
+        buffer = parts.pop();
 
-                if (currentEvent === 'routing') {
-                  updatedMsg.badges = [{ label: d.label, reason: d.reason }];
-                } else if (currentEvent === 'memory_matches' && d.used) {
-                  updatedMsg.memory = d.matches[0];
-                } else if (currentEvent === 'token') {
-                  currentText += d.token;
-                  updatedMsg.content = currentText;
-                }
-                return updatedMsg;
-              })
-            );
+        for (const part of parts) {
+          currentEvent = '';
+          let dataStr = '';
+          for (const line of part.split('\n')) {
+            if (line.startsWith('event: ')) {
+              currentEvent = line.slice(7).trim();
+            } else if (line.startsWith('data: ')) {
+              dataStr += line.slice(6);
+            }
           }
+          handleEvent(currentEvent, dataStr);
         }
       }
     } catch (e) {
@@ -133,7 +174,7 @@ export default function Chat() {
                   <span className="material-symbols-outlined text-primary text-5xl" style={{ fontVariationSettings: "'FILL' 1" }}>neurology</span>
                 </div>
                 <h2 className="font-headline-xl text-headline-xl mb-sm ai-gradient-text">Welcome back, Hindsight</h2>
-                <p className="font-body-md text-body-md text-on-surface-variant max-w-lg mb-xl">Your system architect assistant is ready. I've indexed 22 operational memories and neural fragments.</p>
+                <p className="font-body-md text-body-md text-on-surface-variant max-w-lg mb-xl">Your system architect assistant is ready. I've indexed {memoryCount} operational {memoryCount === 1 ? 'memory' : 'memories'} and neural fragments.</p>
                 <div className="flex flex-wrap justify-center gap-md max-w-2xl">
                   <button 
                     onClick={() => sendQuery('Check last IT incident')}
@@ -162,7 +203,7 @@ export default function Chat() {
                 <div key={msg.id} className={`flex items-start gap-md ${msg.role === 'user' ? 'flex-row-reverse mb-xl' : 'mb-xl'}`}>
                   {msg.role === 'user' ? (
                     <>
-                      <div className="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center font-label-mono text-primary">JD</div>
+                      <div className="w-10 h-10 rounded-full bg-surface-container-high border border-white/10 flex items-center justify-center font-label-mono text-primary">{(user?.username || 'U').slice(0, 2).toUpperCase()}</div>
                       <div className="glass-card glass-card-active p-md rounded-2xl rounded-tr-none max-w-[80%]">
                         <p className="font-body-md text-body-md text-on-surface">{msg.content}</p>
                       </div>
@@ -244,7 +285,7 @@ export default function Chat() {
           <div className="glass-card p-md rounded-xl cursor-pointer hover:border-primary/30 transition-all" onClick={() => navigate('/analytics')}>
             <div className="flex justify-between items-center mb-sm">
               <span className="font-body-sm text-body-sm font-semibold">Memory Context</span>
-              <span className="font-label-mono text-[11px] text-secondary">22 Records</span>
+              <span className="font-label-mono text-[11px] text-secondary">{memoryCount} Records</span>
             </div>
             <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
               <div className="bg-secondary h-full rounded-full" style={{ width: '65%' }}></div>
