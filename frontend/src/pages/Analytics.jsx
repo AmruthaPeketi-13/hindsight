@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import { api } from '../api';
 
 export default function Analytics() {
   const [stats, setStats] = useState({ 
@@ -17,8 +18,8 @@ export default function Analytics() {
       try {
         const token = localStorage.getItem('hindsight_token');
         const [statsRes, analyticsRes] = await Promise.all([
-          fetch('/api/stats', { headers: { 'Authorization': `Bearer ${token}` } }),
-          fetch('/api/analytics', { headers: { 'Authorization': `Bearer ${token}` } })
+          fetch(api('/api/stats'), { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(api('/api/analytics'), { headers: { 'Authorization': `Bearer ${token}` } })
         ]);
         
         if (statsRes.ok && analyticsRes.ok) {
@@ -44,7 +45,7 @@ export default function Analytics() {
   const handleExport = async () => {
     try {
       const token = localStorage.getItem('hindsight_token');
-      const res = await fetch('/api/analytics/export', {
+      const res = await fetch(api('/api/analytics/export'), {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (!res.ok) throw new Error('Export failed');

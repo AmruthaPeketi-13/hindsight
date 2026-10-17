@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth';
+import { api } from '../api';
 
 export default function Login() {
   const [isLogin, setIsLogin] = useState(true);
@@ -70,7 +71,7 @@ export default function Login() {
     const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
 
     try {
-      const res = await fetch(endpoint, {
+      const res = await fetch(api(endpoint), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password })

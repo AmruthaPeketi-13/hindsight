@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import { api } from '../api';
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState('general');
@@ -17,7 +18,7 @@ export default function Settings() {
   useEffect(() => {
     const loadSettings = async () => {
       try {
-        const res = await fetch('/api/settings', {
+        const res = await fetch(api('/api/settings'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('hindsight_token')}` }
         });
         if (res.ok) {
@@ -34,7 +35,7 @@ export default function Settings() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/settings', {
+      const res = await fetch(api('/api/settings'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

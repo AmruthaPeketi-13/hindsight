@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AuthContext } from './auth';
+import { api } from '../api';
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -12,7 +13,7 @@ export const AuthProvider = ({ children }) => {
       if (token && username) {
         // Verify token is still valid against the server
         try {
-          const response = await fetch('/api/auth/me', {
+          const response = await fetch(api('/api/auth/me'), {
             headers: { 'Authorization': `Bearer ${token}` }
           });
           if (response.ok) {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
+import { api } from '../api';
 
 export default function Vault() {
   const [memories, setMemories] = useState([]);
@@ -12,7 +13,7 @@ export default function Vault() {
   useEffect(() => {
     const fetchMemories = async () => {
       try {
-        const res = await fetch('/api/memory', {
+        const res = await fetch(api('/api/memory'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('hindsight_token')}` }
         });
         if (res.ok) {
@@ -47,7 +48,7 @@ export default function Vault() {
     const content = prompt('Enter a new operational memory:');
     if (!content) return;
     try {
-      const res = await fetch('/api/memory', {
+      const res = await fetch(api('/api/memory'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -355,5 +355,39 @@
     "completionTokens": 77,
     "costUSD": 0,
     "latencyMs": 3244
+  },
+  {
+    "id": 1792266120405,
+    "timestamp": "2026-10-17T19:42:00.405Z",
+    "user": "smoke_140645967",
+    "message": "The nightly ETL job failed with a DB timeout again. What should I do?",
+    "model": "gemini-2.5-flash",
+    "tier": 2,
+    "flag": "medium",
+    "category": "General",
+    "memoryUsed": true,
+    "memoryMatchCount": 3,
+    "isRecurrence": false,
+    "promptTokens": 424,
+    "completionTokens": 112,
+    "costUSD": 0,
+    "latencyMs": 4701
+  },
+  {
+    "id": 1792266130873,
+    "timestamp": "2026-10-17T19:42:10.873Z",
+    "user": "smoke_472121006",
+    "message": "The nightly ETL job failed with a DB timeout again. What should I do?",
+    "model": "gemini-2.5-flash",
+    "tier": 2,
+    "flag": "medium",
+    "category": "General",
+    "memoryUsed": true,
+    "memoryMatchCount": 3,
+    "isRecurrence": false,
+    "promptTokens": 510,
+    "completionTokens": 200,
+    "costUSD": 0,
+    "latencyMs": 3915
   }
 ]

@@ -3,28 +3,64 @@ const crypto = require('crypto');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const sqlite = require('./memory_sqlite');
 
+// When DATABASE_URL points at Postgres we treat it as the source of truth and
+// refuse to silently write to a separate local SQLite database (which would
+// split the data). Set DB_FALLBACK_SQLITE=true to opt back into the fallback.
+const PG_CONFIGURED = /^postgres(ql)?:\/\//i.test(process.env.DATABASE_URL || '');
+const ALLOW_SQLITE_FALLBACK = !PG_CONFIGURED || process.env.DB_FALLBACK_SQLITE === 'true';
+
 let prisma = null;
 try {
   prisma = new PrismaClient();
 } catch (err) {
-  console.warn('[Prisma] Client initialization failed, using SQLite fallback:', err.message);
+  console.warn('[Prisma] Client initialization failed:', err.message);
 }
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 let prismaAvailable = null;
 
+function degrade(reason) {
+  if (!ALLOW_SQLITE_FALLBACK) {
+    throw new Error(
+      `Postgres backend unavailable (${reason}). SQLite fallback is disabled because ` +
+      `DATABASE_URL points at Postgres. Set DB_FALLBACK_SQLITE=true to allow the fallback.`
+    );
+  }
+  console.warn('[Prisma] ' + reason + ' — falling back to SQLite.');
+  prismaAvailable = false;
+}
+
 async function checkPrisma() {
-  if (prismaAvailable === false || !prisma) return false;
+  if (!prisma) {
+    degrade('Prisma client not initialized');
+    return false;
+  }
   if (prismaAvailable === true) return true;
+  if (prismaAvailable === false) return false;
   try {
     await prisma.$queryRaw`SELECT 1`;
     prismaAvailable = true;
     return true;
   } catch (err) {
-    console.warn('[Prisma] Database unreachable (' + err.message + '). Falling back to SQLite.');
-    prismaAvailable = false;
+    degrade('Database unreachable: ' + err.message);
     return false;
   }
+}
+
+async function generateEmbedding(text) {
+  const clean = (text || '').slice(0, 8000);
+  const models = ['text-embedding-004', 'gemini-embedding-2'];
+  for (const name of models) {
+    try {
+      const model = genAI.getGenerativeModel({ model: name });
+      const result = await model.embedContent(clean);
+      const values = result?.embedding?.values;
+      if (values && values.length) return values;
+    } catch (err) {
+      console.warn(`[embedding] ${name} failed: ${err.message}`);
+    }
+  }
+  return null;
 }
 
 function hashPassword(password, salt) {
@@ -48,7 +84,7 @@ async function registerUser(username, password) {
       return { id, username, token };
     } catch (e) {
       if (e.message === "Username already exists") throw e;
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.registerUser(username, password);
@@ -71,7 +107,7 @@ async function loginUser(username, password) {
       return { id: user.id, username: user.username, token };
     } catch (e) {
       if (e.message === "Invalid username or password") throw e;
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.loginUser(username, password);
@@ -87,7 +123,7 @@ async function verifyToken(token) {
       });
       if (user) return user;
     } catch (e) {
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.verifyToken(token);
@@ -98,10 +134,10 @@ async function getSettings() {
     try {
       const rows = await prisma.setting.findMany();
       const settings = {};
-      rows.forEach(r => settings[r.key] = JSON.parse(r.value));
+      rows.forEach(r => { try { settings[r.key] = JSON.parse(r.value); } catch { settings[r.key] = r.value; } });
       return settings;
     } catch (e) {
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.getSettings();
@@ -117,7 +153,7 @@ async function saveSetting(key, value) {
       });
       return;
     } catch (e) {
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.saveSetting(key, value);
@@ -127,26 +163,21 @@ async function searchMemory(query) {
   if (!query || query.trim() === '') return [];
   if (await checkPrisma()) {
     try {
-      let queryEmbedding = null;
-      try {
-        const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-        const result = await model.embedContent(query);
-        queryEmbedding = result.embedding.values;
-      } catch(e) {}
+      const queryEmbedding = await generateEmbedding(query);
+      if (!queryEmbedding) return [];
 
-      if (queryEmbedding) {
-        const embeddingVector = `[${queryEmbedding.join(',')}]`;
-        const scored = await prisma.$queryRaw`
-          SELECT id, date, category, severity, "user", content, resolution, tags, "recurrenceCount",
-          (1 - (embedding <=> ${embeddingVector}::vector)) as _score
-          FROM "Memory"
-          ORDER BY embedding <=> ${embeddingVector}::vector
-          LIMIT 3;
-        `;
-        return scored.filter(m => m._score > 0.4);
-      }
-    } catch(e) {
-      prismaAvailable = false;
+      const embeddingVector = `[${queryEmbedding.join(',')}]`;
+      const scored = await prisma.$queryRaw`
+        SELECT id, date, category, severity, "user", content, resolution, tags, "recurrenceCount",
+        (1 - (embedding <=> ${embeddingVector}::vector)) as _score
+        FROM "Memory"
+        WHERE embedding IS NOT NULL
+        ORDER BY embedding <=> ${embeddingVector}::vector
+        LIMIT 3;
+      `;
+      return scored.filter(m => m._score > 0.4);
+    } catch (e) {
+      degrade(e.message);
     }
   }
   return await sqlite.searchMemory(query);
@@ -186,13 +217,23 @@ async function saveMemory({ user, content, category, severity, resolution, tags 
 
       await prisma.memory.create({
         data: {
-          id, date: now, category: safeCategory, severity: safeSeverity, 
+          id, date: now, category: safeCategory, severity: safeSeverity,
           user: safeUser, content: safeContent, resolution: safeResolution, tags: safeTags, recurrenceCount: 1
         }
       });
+
+      // Prisma can't write an Unsupported("vector") column directly — use raw SQL.
+      const embedding = await generateEmbedding(
+        `${safeCategory} | ${safeSeverity} | ${safeContent} | ${safeResolution} | ${(tags || []).join(' ')}`
+      );
+      if (embedding && embedding.length) {
+        const vec = `[${embedding.join(',')}]`;
+        await prisma.$executeRaw`UPDATE "Memory" SET embedding = ${vec}::vector WHERE id = ${id}`;
+      }
+
       return { id, isRecurrence: false };
-    } catch(e) {
-      prismaAvailable = false;
+    } catch (e) {
+      degrade(e.message);
     }
   }
   return await sqlite.saveMemory({ user, content, category, severity, resolution, tags });
@@ -204,9 +245,13 @@ async function loadMemory() {
       const rows = await prisma.memory.findMany({
         orderBy: { date: 'desc' }
       });
-      return rows.map(m => ({ ...m, severity: normalizeSeverity(m.severity) }));
-    } catch(e) {
-      prismaAvailable = false;
+      return rows.map(m => {
+        let parsedTags = m.tags;
+        try { parsedTags = JSON.parse(m.tags); } catch { parsedTags = m.tags; }
+        return { ...m, tags: parsedTags, severity: normalizeSeverity(m.severity) };
+      });
+    } catch (e) {
+      degrade(e.message);
     }
   }
   return sqlite.loadMemory();
@@ -219,7 +264,7 @@ async function deleteMemory(id) {
       return true;
     } catch(e) {
       if (e.code === 'P2025') return false;
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.deleteMemory(id);
@@ -230,16 +275,13 @@ async function deleteAllMemories() {
   if (await checkPrisma()) {
     try {
       await prisma.memory.deleteMany({});
+      remaining = await prisma.memory.count();
+      return remaining;
     } catch(e) {
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   sqlite.deleteAllMemories();
-  if (await checkPrisma()) {
-    try {
-      remaining = await prisma.memory.count();
-    } catch(e) { remaining = 0; }
-  }
   return remaining;
 }
 
@@ -268,7 +310,7 @@ async function getStats() {
     try {
       return computeStats(await prisma.memory.findMany());
     } catch(e) {
-      prismaAvailable = false;
+      degrade(e.message);
     }
   }
   return sqlite.getStats();

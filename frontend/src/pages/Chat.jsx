@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import { useAuth } from '../context/auth';
+import { api } from '../api';
 
 export default function Chat() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function Chat() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('/api/stats', {
+        const res = await fetch(api('/api/stats'), {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('hindsight_token')}` }
         });
         if (res.ok) {
@@ -57,7 +58,7 @@ export default function Chat() {
 
     try {
       const token = localStorage.getItem('hindsight_token');
-      const res = await fetch('/api/chat/stream', {
+      const res = await fetch(api('/api/chat/stream'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: hindsight-api
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_BUDGET_USD
+        value: "5.00"
+      - key: NODE_VERSION
+        value: "22"
