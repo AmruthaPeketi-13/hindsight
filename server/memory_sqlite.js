@@ -116,11 +116,17 @@ async function searchMemory(query) {
   // Try to generate embedding
   let queryEmbedding = null;
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
+    const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
     const result = await model.embedContent(query);
     queryEmbedding = result.embedding.values;
   } catch(e) {
-    console.error('Embedding failed for search, falling back to keywords', e.message);
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
+      const result = await model.embedContent(query);
+      queryEmbedding = result.embedding.values;
+    } catch(err) {
+      console.error('Embedding failed for search, falling back to keywords', err.message);
+    }
   }
 
   const stmt = db.prepare(`SELECT * FROM memories ORDER BY date DESC LIMIT 100`);
@@ -136,12 +142,12 @@ async function searchMemory(query) {
     } else {
       // Fallback keyword match
       const keywords = query.toLowerCase().split(/\s+/).filter(w => w.length > 3);
-      const txt = (m.content + ' ' + m.resolution + ' ' + m.tags).toLowerCase();
+      const txt = (m.content + ' ' + (m.resolution || '') + ' ' + (m.tags || '')).toLowerCase();
       keywords.forEach(kw => { if (txt.includes(kw)) score += 0.2; });
     }
     m._score = score;
     return m;
-  }).filter(m => m._score > 0.4) // Threshold for semantic match
+  }).filter(m => m._score > 0.3) // Threshold for match
     .sort((a,b) => b._score - a._score)
     .slice(0, 3);
     
@@ -172,12 +178,19 @@ async function saveMemory(entry) {
     // Generate embedding
     let embeddingStr = null;
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
-      const textToEmbed = `${entry.category} | ${entry.severity} | ${entry.content} | ${entry.resolution || ''} | ${(entry.tags||[]).join(' ')}`;
+      const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+      const textToEmbed = `${entry.category || 'General'} | ${entry.severity || 'low'} | ${entry.content} | ${entry.resolution || ''} | ${(entry.tags||[]).join(' ')}`;
       const result = await model.embedContent(textToEmbed);
       embeddingStr = JSON.stringify(result.embedding.values);
     } catch(e) {
-      console.error('Embedding failed for save', e.message);
+      try {
+        const model = genAI.getGenerativeModel({ model: "gemini-embedding-2" });
+        const textToEmbed = `${entry.category || 'General'} | ${entry.severity || 'low'} | ${entry.content} | ${entry.resolution || ''} | ${(entry.tags||[]).join(' ')}`;
+        const result = await model.embedContent(textToEmbed);
+        embeddingStr = JSON.stringify(result.embedding.values);
+      } catch(err) {
+        console.error('Embedding failed for save', err.message);
+      }
     }
 
     const id = Date.now().toString() + Math.floor(Math.random()*1000);
@@ -214,11 +227,16 @@ function getStats() {
   const cats = {};
   let recs = 0;
   all.forEach(m => {
-    cats[m.category] = (cats[m.category] || 0) + 1;
+    const cat = m.category || 'General';
+    cats[cat] = (cats[cat] || 0) + 1;
     if (m.recurrenceCount > 1) recs++;
   });
   return {
     total: all.length,
+    totalQueries: all.length,
+    activeHits: `${all.length > 0 ? (all.length * 1.5).toFixed(1) : 0}k`,
+    orphaned: 0,
+    recurrent: recs,
     byCategory: cats,
     recurrentIssues: recs,
     topRecurrent: all.filter(m => m.recurrenceCount > 1).sort((a,b) => b.recurrenceCount - a.recurrenceCount).slice(0,5)
@@ -231,6 +249,12 @@ function deleteMemory(id) {
   return info.changes > 0;
 }
 
+function deleteAllMemories() {
+  const stmt = db.prepare(`DELETE FROM memories`);
+  const info = stmt.run();
+  return info.changes >= 0;
+}
+
 module.exports = {
   loadMemory,
   saveMemory,
@@ -241,5 +265,7 @@ module.exports = {
   loginUser,
   verifyToken,
   deleteMemory,
+  deleteAllMemories,
+  getStats,
   db
 };

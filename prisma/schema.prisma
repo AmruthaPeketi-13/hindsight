@@ -1,0 +1,36 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+model Memory {
+  id              String   @id
+  date            String?
+  category        String?
+  severity        String?
+  user            String?
+  content         String?
+  resolution      String?
+  tags            String?
+  recurrenceCount Int      @default(1)
+  embedding       Unsupported("vector(768)")?
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model User {
+  id           String  @id
+  username     String  @unique
+  passwordHash String?
+  salt         String?
+  token        String?
+}

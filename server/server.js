@@ -4,7 +4,7 @@ const cors     = require('cors');
 const path     = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const { searchMemory, saveMemory, loadMemory, getStats, registerUser, loginUser, verifyToken } = require('./memory_sqlite');
+const { searchMemory, saveMemory, loadMemory, getStats, registerUser, loginUser, verifyToken } = require('./memory_prisma');
 const { classifyQuery, estimateCost }                    = require('./router');
 const { saveLog, getAnalytics }                          = require('./analytics');
 const { detectCategory, detectSeverity, extractTags }   = require('./helpers');
@@ -15,26 +15,26 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(cors({ origin: '*', methods: ['GET','POST','DELETE','OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization'] }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '../client')));
+app.use(express.static(path.join(__dirname, '../frontend/dist')));
 
 // ══════════════════════════════════════════════════════════════════════════════
 // Auth API
 // ══════════════════════════════════════════════════════════════════════════════
-app.post('/api/auth/register', (req, res) => {
+app.post('/api/auth/register', async (req, res) => {
   try {
     const { username, password } = req.body;
     if (!username || !password) return res.status(400).json({ error: "Username and password required" });
-    const user = registerUser(username, password);
+    const user = await registerUser(username, password);
     res.json(user);
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
 });
 
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const user = loginUser(username, password);
+    const user = await loginUser(username, password);
     res.json(user);
   } catch (e) {
     res.status(401).json({ error: e.message });
@@ -42,13 +42,13 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // Middleware to protect routes
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: "Unauthorized" });
   }
   const token = authHeader.split(' ')[1];
-  const user = verifyToken(token);
+  const user = await verifyToken(token);
   if (!user) return res.status(401).json({ error: "Invalid token" });
   req.user = user;
   next();
@@ -272,9 +272,9 @@ app.get('/api/analytics/export', requireAuth, (req, res) => {
 // ══════════════════════════════════════════════════════════════════════════════
 // Memory API
 // ══════════════════════════════════════════════════════════════════════════════
-app.get('/api/memory', requireAuth, (req, res) => {
-  const { loadMemory } = require('./memory_sqlite');
-  let memories = loadMemory();
+app.get('/api/memory', requireAuth, async (req, res) => {
+  const { loadMemory } = require('./memory_prisma');
+  let memories = await loadMemory();
   
   if (req.query.category) memories = memories.filter(m => m.category === req.query.category);
   if (req.query.severity) memories = memories.filter(m => m.severity === req.query.severity);
@@ -283,7 +283,7 @@ app.get('/api/memory', requireAuth, (req, res) => {
 });
 
 app.post('/api/memory', requireAuth, async (req, res) => {
-  const { saveMemory } = require('./memory_sqlite');
+  const { saveMemory } = require('./memory_prisma');
   const result = await saveMemory({
     user: req.user.username,
     content: req.body.content || 'Manual memory entry',
@@ -301,7 +301,7 @@ app.post('/api/memory', requireAuth, async (req, res) => {
 app.post('/api/webhooks/:source', async (req, res) => {
   const source = req.params.source.toLowerCase();
   const payload = req.body;
-  const { saveMemory } = require('./memory_sqlite');
+  const { saveMemory } = require('./memory_prisma');
 
   let entry = { user: `Webhook:${source}`, content: '', category: 'Incident', severity: 'low', resolution: '', tags: [source] };
 
@@ -332,16 +332,19 @@ app.post('/api/webhooks/:source', async (req, res) => {
   }
 });
 
-app.delete('/api/memory', (req, res) => {
-  const { loadMemory } = require('./memory_sqlite');
-  const db = require('better-sqlite3')(require('path').join(__dirname, '../data/memory.sqlite'));
-  db.prepare('DELETE FROM memories').run();
-  res.json({ success: true, remaining: 0 });
+app.delete('/api/memory', requireAuth, (req, res) => {
+  const { deleteAllMemories } = require('./memory_sqlite');
+  try {
+    deleteAllMemories();
+    res.json({ success: true, remaining: 0 });
+  } catch(e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
-app.delete('/api/memory/:id', (req, res) => {
-  const { deleteMemory } = require('./memory_sqlite');
-  const success = deleteMemory(req.params.id);
+app.delete('/api/memory/:id', async (req, res) => {
+  const { deleteMemory } = require('./memory_prisma');
+  const success = await deleteMemory(req.params.id);
   res.json({ success });
 });
 
@@ -352,30 +355,28 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
-app.get('/api/settings', (req, res) => {
-  const { getSettings } = require('./memory_sqlite');
-  res.json(getSettings());
+app.get('/api/settings', async (req, res) => {
+  const { getSettings } = require('./memory_prisma');
+  res.json(await getSettings());
 });
 
-app.post('/api/settings', (req, res) => {
-  const { saveSetting } = require('./memory_sqlite');
+app.post('/api/settings', async (req, res) => {
+  const { saveSetting } = require('./memory_prisma');
   for (const [key, value] of Object.entries(req.body)) {
-    saveSetting(key, value);
+    await saveSetting(key, value);
   }
   res.json({ success: true });
 });
 
-app.get('/api/analytics', (req, res) => res.json(getAnalytics()));
 
-app.get('/api/analytics/export', (req, res) => {
-  const data = getAnalytics();
-  res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Content-Disposition', 'attachment; filename="analytics_export.json"');
-  res.send(JSON.stringify(data, null, 2));
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), memoryCount: loadMemory().length, sessionSpend: parseFloat(sessionSpend.toFixed(6)) });
+app.get('/api/health', async (req, res) => {
+  try {
+    const { loadMemory } = require('./memory_prisma');
+    const memories = await loadMemory();
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), memoryCount: (memories || []).length, sessionSpend: parseFloat(sessionSpend.toFixed(6)) });
+  } catch(e) {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), memoryCount: 0, sessionSpend: parseFloat(sessionSpend.toFixed(6)) });
+  }
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
